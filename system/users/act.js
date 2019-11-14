@@ -41,7 +41,19 @@ logIn = async(req, res) => {
     }
 };
 
+// ADMIN
+adminDeleteUserProfile = async(req, res) => {
+    const userId = req.params.userId;
+    try {
+        await adminDeleteUserProfileQuery(userId);
 
+        res.status(200).json({
+            message: `User with ID of ${userId}, has been deleted`
+        });
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
 
 
 
@@ -74,5 +86,6 @@ getAllUsers = async(req, res) => {
 module.exports = {
     signUp,
     logIn,
+    adminDeleteUserProfile,
     getAllUsers
 }

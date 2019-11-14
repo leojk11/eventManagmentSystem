@@ -26,8 +26,23 @@ logInUserQuery = (username) => {
     });
 };
 
+// ADMIN
+adminDeleteUserProfileQuery = (userId) => {
+    const query = "DELETE FROM users WHERE Id = ?";
+    return new Promise((res, rej) => {
+        connection.query(query,[userId], (error, results, fields)=> {
+            if(error){
+                rej(error);
+            } else {
+                res(results)
+            }
+        });
+    });
+};
+
 
 module.exports = {
     signUpQuery,
-    logInUserQuery
+    logInUserQuery,
+    adminDeleteUserProfileQuery
 }
