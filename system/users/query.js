@@ -54,11 +54,23 @@ adminDeleteUserProfileQuery = (userId) => {
         });
     });
 };
-
+adminGetOneUserQuery = (userId) => {
+    const query = "SELECT * FROM users WHERE Id = ?";
+    return new Promise((res,rej) => {
+        connection.query(query, userId, (error, results, fiels) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
 
 module.exports = {
     signUpQuery,
     logInUserQuery,
     editMyProfileQuery,
-    adminDeleteUserProfileQuery
+    adminDeleteUserProfileQuery,
+    adminGetOneUserQuery
 }
