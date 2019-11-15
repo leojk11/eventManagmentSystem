@@ -26,6 +26,21 @@ logInUserQuery = (username) => {
     });
 };
 
+editMyProfileQuery = (user, userId) => {
+    console.log(user);
+    const query = "UPDATE users SET Name = ?, Lastname = ?, Username = ?, Email = ?, Company_name = ? WHERE Id = ?";
+    return new Promise((res, rej)=> {
+        connection.query(query, [user[0], user[1], user[2], user[3], user[4], userId], (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
+
+
 // ADMIN
 adminDeleteUserProfileQuery = (userId) => {
     const query = "DELETE FROM users WHERE Id = ?";
@@ -44,5 +59,6 @@ adminDeleteUserProfileQuery = (userId) => {
 module.exports = {
     signUpQuery,
     logInUserQuery,
+    editMyProfileQuery,
     adminDeleteUserProfileQuery
 }
