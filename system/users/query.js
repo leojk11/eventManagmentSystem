@@ -66,11 +66,38 @@ adminGetOneUserQuery = (userId) => {
         });
     });
 };
+adminGetOnlyUsernameQuery = () => {
+    const query = "SELECT Username FROM users";
+    return new Promise((res, rej) => {
+        connection.query(query, (error, results, fields) => {
+            if(error){
+                rej(error)
+                console.log(error);
+            } else {
+                res(results)
+            }
+        });
+    });
+};
+adminGetOnlyEmailsQuery = () => {
+    const query = "SELECT Email FROM users";
+    return new Promise((res, rej) => {
+        connection.query(query, (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
 
 module.exports = {
     signUpQuery,
     logInUserQuery,
     editMyProfileQuery,
     adminDeleteUserProfileQuery,
-    adminGetOneUserQuery
+    adminGetOneUserQuery,
+    adminGetOnlyUsernameQuery,
+    adminGetOnlyEmailsQuery
 }

@@ -2,17 +2,52 @@ const connection = require('../../DB/database');
 const queries = require('./query');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
+const helper = require('../helper/helper');
 
 signUp = async(req, res) => {
     const userRequest = req.body;
+    const username = req.body.Username;
+    const email = req.body.Email;
+    const password = req.body.Password;
 
-    if(req.body.Password.length <= 5) {
+    const emails = await queries.adminGetOnlyEmailsQuery();
+    const emailExist = emails.some(user => {
+        return email === user.Email
+    });
+
+    const usernames = await queries.adminGetOnlyUsernameQuery();
+    const usernameExists = usernames.some(user => {
+        return username === user.Username
+    });
+
+    if(emailExist) {
+        res.status(409).json({
+            success: false,
+            message: `Email ${email}. is already in use. Try with another one.`
+        })
+    } else if(helper.symbols.test(email) == false) {
+        return res.status(400).json({
+            success: false,
+            message: `Email ${email}, is not valid. Try with another one.`
+        });
+    }
+    else if(usernameExists){
+        res.status(409).json({
+            success: false,
+            message: `Username ${username}, is already in use. Try with another one.`
+        })
+    } else if(password.length <= 8) {
         res.status(409).json({
             success: false,
             message: 'Your password must contain at least 6 characters.'
         })
-    } else if(req.body.Username.length < 4){
+    } else if(helper.passwordTest.test(password) == false) {
+        return res.status(400).json({
+            success: false,
+            message: 'Your password must contain 1 lower case letter, 1 capital letter, 1 or more numbers and a specia character as !@#$%^&*'
+        })
+    } 
+    else if(username.length < 4){
         res.status(409).json({
             success: false,
             message: `Username ${req.body.Username}, is too short. Your username must contain at least 4 characters.`
@@ -33,15 +68,25 @@ signUp = async(req, res) => {
 
 logIn = async(req, res) => {
     const username = req.body.Username;
+    const email = req.body.Email;
     const password = req.body.Password;
 
-    if(username.length <= 4) {
+    const usernames = await queries.adminGetOnlyUsernameQuery();
+    const usernameExists = usernames.some(user => {
+        return username === user.Username
+    });
+
+    if(!usernameExists){
+        res.status(400).json({
+            success: false,
+            message: `Username ${username}, has not been found. Please try with another one.`
+        })
+    } else if(username.length <= 4) {
         res.status(409).json({
             success: false,
             message: `Username ${username}, is too short`
         })
-    }
-    if(password.length <= 1){
+    } else if(password.length <= 1){
         if(password.length <= 6) {
             res.status(409).json({
                 success: false,
