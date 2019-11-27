@@ -9,7 +9,12 @@ const router = express.Router();
 
 router.get('/events', getAllEvents);
 router.get('/admin/events',verifyToken, adminGetAllEvents);
+
 router.post('/:userId/create-event', verifyToken, createEvent);
+router.post('/:eventId/add-details', verifyToken, actions.addDetails);
+
+router.put('/update-event/:eventId', verifyToken, actions.updateDetails);
+
 router.delete('/admin/delete-event/:eventId', verifyToken, adminDeleteEvent)
 
 module.exports = router;

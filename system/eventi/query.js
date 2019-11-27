@@ -14,11 +14,47 @@ function createEventQuery(userId, event) {
         });
     });
 };
+addEventDetailsQuery = (startTime, endTime, date, ticketPrice, availableTickets, eventRoom, eventId) => {
+    const query = "INSERT INTO event_details(Start_time, End_time, Date, Ticket_price, Available_ticket, Event_room, Event_id) VALUES(?,?,?,?,?,?,?)";
+    return new Promise((res, rej) => {
+        connection.query(query, [startTime, endTime, date, ticketPrice, availableTickets, eventRoom, eventId], (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
+updateEventDetailsQuery = () => {
+    const query = "UPDATE event_details SET Start_time = ?, End_time = ?, Date = ?, Ticket_price = ?, Available_ticket = ?, Event_room = ?, Event_id = ? WHERE Id = ?";
+    return new Promise((res, rej) => {
+        connection.query(query, [], (error, results, fields) => {
+            if(error) {
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
 
 getAllEventsQuery = () => {
     const query = "SELECT Title, Short_info, Host FROM events";
     return new Promise((res, rej) => {
         connection.query(query, (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
+getEventByIdQuery = (eventId) => {
+    const query = "SELECT * FROM events WHERE Id = ?";
+    return new Promise((res, rej) => {
+        connection.query(query, [eventId], (error, results, fields) => {
             if(error){
                 rej(error)
             } else {
@@ -60,5 +96,7 @@ module.exports = {
     adminGetAllEventsQuery,
     adminDeleteEventQuery,
     createEventQuery,
-    getAllEventsQuery
+    addEventDetailsQuery,
+    getAllEventsQuery,
+    getEventByIdQuery
 }

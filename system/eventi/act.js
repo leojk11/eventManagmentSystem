@@ -15,6 +15,50 @@ createEvent = async(req, res) => {
         res.status(500).send(error);
     }
 };
+addDetails = async(req, res) => {
+    const eventId = req.params.eventId;
+
+    const startTime = req.body.Start_time;
+    const endTime = req.body.End_time;
+    const date = req.body.Date;
+
+    const ticketPrice = req.body.Ticket_price;
+    const finalTicketPrice = ticketPrice + "$";
+
+    const availableTickets = req.body.Available_tickets;
+
+    const eventRoom = req.body.Event_room;
+    const finalEventRoom = eventRoom + " " + "room";
+
+    try {
+        await queries.addEventDetailsQuery(startTime, endTime, date, finalTicketPrice, availableTickets, finalEventRoom, eventId);
+        res.status(200).json({
+            message: 'Event details have been updated.'
+        })
+    } catch (error) {
+        req.status(500).send(error);
+    }
+};
+updateDetails = async(req, res) => {
+    const eventId = req.params.eventId;
+
+    const events = await queries.getAllEventsQuery();
+    const eventExists = events.some(event => {
+        return event.id == eventId
+    })
+    
+    if(!eventExists) {
+        res.status(400).json({
+            success: false,
+            message: `Event with ID of ${eventId}, has not been found.`
+        })
+    }
+    try {
+        
+    } catch (error) {
+        res.status(500).send(error);
+    }
+};
 
 getAllEvents = async(req, res) => {
     try {
@@ -48,12 +92,14 @@ adminDeleteEvent = async(req, res) => {
     } catch (error) {
         res.status(500).send(error);
     }
-}
+};
 
 
 
 module.exports = {
     createEvent,
+    addDetails,
+    updateDetails,
     adminDeleteEvent,
     adminGetAllEvents,
     getAllEvents
