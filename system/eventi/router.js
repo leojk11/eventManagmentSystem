@@ -9,6 +9,7 @@ const router = express.Router();
 
 router.get('/events', getAllEvents);
 router.get('/admin/events',verifyToken, adminGetAllEvents);
+router.get('/events-and-details', verifyToken, actions.getAllEventsAndDetails);
 
 router.post('/:userId/create-event', verifyToken, createEvent);
 router.post('/:eventId/add-details', verifyToken, actions.addDetails);
