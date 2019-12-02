@@ -12,6 +12,30 @@ createTicketQuery = (price, availbaleAm, eventInfo, eventId, userId) => {
         });
     });
 };
+getAllAvailableTicketsQuery = () => {
+    const query = "SELECT * FROM tickets WHERE Available_amount > 0";
+    return new Promise((res, rej) => {
+        connection.query(query, (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
+getMyTicketsQuery = (userId) => {
+    const query = "SELECT * FROM tickets WHERE User_id = ?";
+    return new Promise((res, rej) => {
+        connection.query(query, [userId], (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
 
 // ADMIN
 adminGetAllTicketsQuery = () => {
@@ -41,6 +65,8 @@ adminGetOnlyOneTicketQuery = (eventId) => {
 
 module.exports = {
     createTicketQuery,
+    getAllAvailableTicketsQuery,
+    getMyTicketsQuery,
     adminGetAllTicketsQuery,
     adminGetOnlyOneTicketQuery
 }

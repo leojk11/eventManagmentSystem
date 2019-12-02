@@ -13,6 +13,19 @@ addCardQuery = (cardType, exMounth, exYear, cardNumber, cardOwnerName, moneyAmou
     });
 };
 
+getOneCardQuery = (userId) => {
+    const query = "SELECT * FROM payment_details WHERE User_id = 1";
+    return new Promise((res, rej) => {
+        connection.query(query, [userId], (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
+
 getCardNumbersQuery = () => {
     const query = "SELECT Card_number FROM payment_details";
     return new Promise((res, rej) => {
@@ -53,7 +66,7 @@ getOnlyCardId = () => {
 };
 
 getOnlyMoneyAmountQuery = (userId) => {
-    const query = "SELECT Money FROM payment_details WHERE User_id = ?";
+    const query = "SELECT Money FROM payment_details";
     return new Promise((res, rej) => {
         connection.query(query, [userId], (error, results, fields) => {
             if(error){
@@ -91,6 +104,18 @@ insertMoneyQuery = (moneyAmount, userId) => {
     });
 };
 
+getAllTicketsQuery = () => {
+    const query = "SELECT * FROM tickets";
+    return new Promise((res, rej) => {
+        connection.query(query, (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
 
 // ADMIN
 adminGetAllCardsQuery = () => {
@@ -114,5 +139,7 @@ module.exports = {
     getOnlyCardNumber,
     getOnlyCardId,
     getOnlyMoneyAmountQuery,
-    adminGetAllCardsQuery
+    getOneCardQuery,
+    adminGetAllCardsQuery,
+    getAllTicketsQuery
 }

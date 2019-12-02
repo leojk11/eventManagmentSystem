@@ -39,8 +39,18 @@ editMyProfileQuery = (user, userId) => {
         });
     });
 };
-
-
+getUserInfoAndEventsQuery = (userId) => {
+    const query = "SELECT Name, Lastname, Email, Price, Available_amount, Event_info FROM users LEFT JOIN tickets ON tickets.User_id = users.Id WHERE users.Id = ?";
+    return new Promise((res, rej) => {
+        connection.query(query, [userId], (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
 // ADMIN
 adminDeleteUserProfileQuery = (userId) => {
     const query = "DELETE FROM users WHERE Id = ?";
@@ -91,6 +101,18 @@ adminGetOnlyEmailsQuery = () => {
         });
     });
 };
+getAllUsersQuery = () => {
+    const query = "SELECT * FROM users";
+    return new Promise((resolve, reject) => {
+        connection.query(query, (error, results, fields) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results)
+            }
+          });
+    });
+};
 
 module.exports = {
     signUpQuery,
@@ -99,5 +121,7 @@ module.exports = {
     adminDeleteUserProfileQuery,
     adminGetOneUserQuery,
     adminGetOnlyUsernameQuery,
-    adminGetOnlyEmailsQuery
+    adminGetOnlyEmailsQuery,
+    getAllUsersQuery,
+    getUserInfoAndEventsQuery
 }

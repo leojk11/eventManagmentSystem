@@ -1,8 +1,18 @@
-const connection = require('../../DB/database');
 const queries = require('./query');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const helper = require('../helper/helper');
+
+getAllUsers = async(req, res) => {
+    try {
+        const users = await queries.getAllUsersQuery();
+        res.status(200).json({
+            users
+        })
+    } catch (error) {
+        res.status(500).send(error);
+    }
+};
 
 signUp = async(req, res) => {
     const userRequest = req.body;
@@ -138,7 +148,29 @@ editMyProfile = async(req, res) => {
     } catch (error) {
         res.status(500).send(error);
     }
-}
+};
+getUserInfoAndEvent = async(req, res) => {
+    const userId = req.params.userId;
+
+    try {
+        const userInfoAndTickets = await queries.getUserInfoAndEventsQuery(userId);
+        res.status(200).json({
+            userInfoAndTickets
+        })
+    } catch (error) {
+        res.status(500).send(error);
+    }
+};
+
+butTickets = async(req, res) => {
+    const userId = req.params.userId;
+
+    try {
+        
+    } catch (error) {
+        req.status(500).send(error);
+    }
+};
 
 // ADMIN
 adminDeleteUserProfile = async(req, res) => {
@@ -180,31 +212,8 @@ adminGetOneUser = async(req, res) => {
 
 
 
-// za test
-getAllUsersQuery = () => {
-    const query = "SELECT * FROM users";
-    return new Promise((resolve, reject) => {
-        connection.query(query, (error, results, fields) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(results)
-            }
-          });
-    });
-};
 
-getAllUsers = async(req, res) => {
-    try {
-        const users = await getAllUsersQuery();
-        res.status(200).json({
-            users
-        })
-       
-    } catch (error) {
-        res.status(500).send(error);
-    }
-};
+
 
 module.exports = {
     signUp,
@@ -212,5 +221,6 @@ module.exports = {
     editMyProfile,
     adminDeleteUserProfile,
     adminGetOneUser,
-    getAllUsers
+    getAllUsers,
+    getUserInfoAndEvent
 }
