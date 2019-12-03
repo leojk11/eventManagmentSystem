@@ -99,7 +99,18 @@ buyTicket = async(req, res) => {
     const userId = req.params.userId;
     const ticketId = req.params.ticketId;
     const userCreditCard = req.body.Credit_card;
-    const tikcetAmount = req.body.Amount;
+    const ticketAmount = req.body.Amount;
+
+    const getUserMoneyBalance = await queries.getMoneyBalance(userId);
+    const finalMoneyBalance = getUserMoneyBalance[0].Money;
+    // console.log(finalMoneyBalance);
+    const getOneTicket = await ticketQueries.adminGetOnlyOneTicketQuery(ticketId); 
+    const ticketPrice = getOneTicket[0].Price;
+    const availableTicketAmount = getOneTicket[0].Available_amount;
+    const leftTicketAmount = availableTicketAmount - ticketAmount;
+    console.log(leftTicketAmount);
+    const totalTicketPrice = ticketPrice * ticketAmount;
+    // console.log(totalTicketPrice);
 
     const tickets = await ticketQueries.adminGetAllTicketsQuery();
     const ticketExist = tickets.some(ticket => {
@@ -131,6 +142,14 @@ buyTicket = async(req, res) => {
             success: false,
             message: `Card with number of ${userCreditCard}, does not exist.`
         })
+    } else {
+        try {
+            const boughtTicket = finalMoneyBalance - totalTicketPrice;
+            await queries.buyTicketQuery(leftTicketAmount, eventId)
+            // console.log(boughtTicket);
+        } catch (error) {
+            res.status(500).send(error);
+        }
     }
 };
 

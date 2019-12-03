@@ -1,5 +1,6 @@
 const connection = require('../../DB/database');
 
+
 addCardQuery = (cardType, exMounth, exYear, cardNumber, cardOwnerName, moneyAmount, userId) => {
     const query = "INSERT INTO payment_details(Card_type, Ex_mounth, Ex_year, Card_number, Card_owner_name, Money, User_id) VALUES (?,?,?,?,?,?,?)";
     return new Promise((res, rej) => {
@@ -103,11 +104,22 @@ insertMoneyQuery = (moneyAmount, userId) => {
         });
     });
 };
-
-getAllTicketsQuery = () => {
-    const query = "SELECT * FROM tickets";
+getMoneyBalance = (userId) => {
+    const query = "SELECT Money FROM payment_details WHERE User_id = ?";
     return new Promise((res, rej) => {
-        connection.query(query, (error, results, fields) => {
+        connection.query(query, [userId], (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
+buyTicketQuery = (leftTicketAmount, eventId) => {
+    const query = "UPDATE tickets SET Available_amount = ? WHERE Event_id = ?";
+    return new Promise((res, rej) => {
+        connection.query(query, [leftTicketAmount, eventId], (error, results, fields) => {
             if(error){
                 rej(error)
             } else {
@@ -141,5 +153,6 @@ module.exports = {
     getOnlyMoneyAmountQuery,
     getOneCardQuery,
     adminGetAllCardsQuery,
-    getAllTicketsQuery
+    getMoneyBalance,
+    buyTicketQuery
 }
