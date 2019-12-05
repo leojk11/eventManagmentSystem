@@ -92,18 +92,6 @@ deleteCardQuery = (cardId) => {
     });
 };
 
-insertMoneyQuery = (moneyAmount, userId) => {
-    const query = "UPDATE payment_details SET Money = ? WHERE User_id = ?";
-    return new Promise((res, rej) => {
-        connection.query(query, [moneyAmount, userId], (error, results, fields) => {
-            if(error){
-                rej(error)
-            } else {
-                res(results)
-            }
-        });
-    });
-};
 getMoneyBalance = (userId) => {
     const query = "SELECT Money FROM payment_details WHERE User_id = ?";
     return new Promise((res, rej) => {
@@ -116,7 +104,25 @@ getMoneyBalance = (userId) => {
         });
     });
 };
+
+insertMoneyQuery = (moneyAmount, userId) => {
+    console.log(moneyAmount);
+    console.log(userId);
+    const query = "UPDATE payment_details SET Money = ? WHERE User_id = ?";
+    return new Promise((res, rej) => {
+        connection.query(query, [moneyAmount, userId], (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
+
 buyTicketQuery = (leftTicketAmount, eventId) => {
+    console.log(leftTicketAmount);
+    console.log(eventId);
     const query = "UPDATE tickets SET Available_amount = ? WHERE Event_id = ?";
     return new Promise((res, rej) => {
         connection.query(query, [leftTicketAmount, eventId], (error, results, fields) => {

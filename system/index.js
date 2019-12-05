@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sysRouter = require('./main-router/router');
+const helper = require('./helper/helper');
 
 
 const app = express();
@@ -10,6 +11,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 app.use(sysRouter);
+app.use(helper.errorHandler);
 
 
 // SERVER

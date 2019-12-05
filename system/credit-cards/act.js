@@ -103,14 +103,17 @@ buyTicket = async(req, res) => {
 
     const getUserMoneyBalance = await queries.getMoneyBalance(userId);
     const finalMoneyBalance = getUserMoneyBalance[0].Money;
-    // console.log(finalMoneyBalance);
+    
     const getOneTicket = await ticketQueries.adminGetOnlyOneTicketQuery(ticketId); 
     const ticketPrice = getOneTicket[0].Price;
     const availableTicketAmount = getOneTicket[0].Available_amount;
+
     const leftTicketAmount = availableTicketAmount - ticketAmount;
-    console.log(leftTicketAmount);
+    const finalTicketAmount = leftTicketAmount.toString();
     const totalTicketPrice = ticketPrice * ticketAmount;
-    // console.log(totalTicketPrice);
+    const boughtTicket = finalMoneyBalance - totalTicketPrice;
+    
+    
 
     const tickets = await ticketQueries.adminGetAllTicketsQuery();
     const ticketExist = tickets.some(ticket => {
@@ -142,13 +145,32 @@ buyTicket = async(req, res) => {
             success: false,
             message: `Card with number of ${userCreditCard}, does not exist.`
         })
-    } else {
+    } else if(availableTicketAmount < 0) {
+        res.status(400).json({
+            success: false,
+            message: 'No tickets are available.'
+        })
+    } else if(totalTicketPrice > finalMoneyBalance) {
+        res.status(400).json({
+            success: false,
+            message: 'You don\'t have enough money to purchase that.'
+        })
+    } 
+    else {
         try {
-            const boughtTicket = finalMoneyBalance - totalTicketPrice;
-            await queries.buyTicketQuery(leftTicketAmount, eventId)
-            // console.log(boughtTicket);
+
+            const updateMoney = await queries.insertMoneyQuery(boughtTicket, userId);
+            const updateTicketAmount = await queries.buyTicketQuery(finalTicketAmount, ticketId);
+            const finalCall = [updateMoney, updateTicketAmount];
+            
+            await finalCall;
+            
+            res.status(200).json({
+                message: `You have bought ${ticketAmount} ticket(s). Total price will be ${totalTicketPrice}$.`
+            })
         } catch (error) {
             res.status(500).send(error);
+            console.log(error);
         }
     }
 };
