@@ -7,12 +7,14 @@ const router = express.Router();
 router.get('/events', actions.getAllEvents);
 router.get('/admin/events', middlewares.verifyToken, actions.adminGetAllEvents);
 router.get('/events-and-details', middlewares.verifyToken, actions.getAllEventsAndDetails);
+router.get('/event/:eventId', actions.getEventById);
+router.get('/:eventId/event-tickets', actions.getEventAndTickets);
 
 router.post('/:userId/create-event', middlewares.verifyToken, actions.createEvent);
 router.post('/:eventId/add-details', middlewares.verifyToken, actions.addDetails);
 
-router.put('/update-event/:eventId', middlewares.verifyToken, actions.updateDetails);
+router.put('/:eventId/update-event', middlewares.verifyToken, actions.updateDetails);
 
-router.delete('/admin/delete-event/:eventId', middlewares.verifyToken, actions.adminDeleteEvent)
+router.delete('/admin/:eventId/delete-event', middlewares.verifyToken, actions.adminDeleteEvent);
 
 module.exports = router;

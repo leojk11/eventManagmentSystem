@@ -75,7 +75,18 @@ getEventByIdQuery = (eventId) => {
         });
     });
 };
-
+getEventAndTickets = (eventId) => {
+    const query = "SELECT Title, Host, Price, Available_amount, Event_info FROM events LEFT JOIN tickets ON tickets.Event_id = events.Id WHERE Event_id = ?";
+    return new Promise((res, rej) => {
+        connection.query(query, [eventId], (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
 
 // ADMIN
 adminGetAllEventsQuery = () => {
@@ -125,5 +136,6 @@ module.exports = {
     getAllEventsQuery,
     getAllEventsAndDetails,
     getEventByIdQuery,
+    getEventAndTickets,
     updateEventDetailsQuery
 }

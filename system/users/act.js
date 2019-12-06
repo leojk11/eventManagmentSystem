@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const helper = require('../helper/helper');
 
+// get all users
 getAllUsers = async(req, res) => {
     try {
         const users = await queries.getAllUsersQuery();
@@ -13,12 +14,27 @@ getAllUsers = async(req, res) => {
         res.status(500).send(error);
     }
 };
+// geting user and user's events
+getUserInfoAndEvent = async(req, res) => {
+    const userId = req.params.userId;
 
+    try {
+        const userInfoAndTickets = await queries.getUserInfoAndEventsQuery(userId);
+        res.status(200).json({
+            userInfoAndTickets
+        })
+    } catch (error) {
+        res.status(500).send(error);
+    }
+};
+
+// registering user
 signUp = async(req, res) => {
     const userRequest = req.body;
     const username = req.body.Username;
     const email = req.body.Email;
     const password = req.body.Password;
+    const userType = req.body.User_type;
 
     const emails = await queries.adminGetOnlyEmailsQuery();
     const emailExist = emails.some(user => {
@@ -76,6 +92,7 @@ signUp = async(req, res) => {
     }
 }
 
+// log in
 logIn = async(req, res) => {
     const username = req.body.Username;
     const email = req.body.Email;
@@ -129,6 +146,8 @@ logIn = async(req, res) => {
     }
 };
 
+
+// editing profile
 editMyProfile = async(req, res) => {
     const name = req.body.Name;
     const lastname = req.body.Lastname;
@@ -149,30 +168,9 @@ editMyProfile = async(req, res) => {
         res.status(500).send(error);
     }
 };
-getUserInfoAndEvent = async(req, res) => {
-    const userId = req.params.userId;
-
-    try {
-        const userInfoAndTickets = await queries.getUserInfoAndEventsQuery(userId);
-        res.status(200).json({
-            userInfoAndTickets
-        })
-    } catch (error) {
-        res.status(500).send(error);
-    }
-};
-
-butTickets = async(req, res) => {
-    const userId = req.params.userId;
-
-    try {
-        
-    } catch (error) {
-        req.status(500).send(error);
-    }
-};
 
 // ADMIN
+// adming can only delete user profiles
 adminDeleteUserProfile = async(req, res) => {
     const userId = req.params.userId;
     try {
@@ -185,6 +183,8 @@ adminDeleteUserProfile = async(req, res) => {
         res.status(500).send(error);
     }
 };
+
+// admin can only get one user
 adminGetOneUser = async(req, res) => {
     const userId = req.params.userId;
 

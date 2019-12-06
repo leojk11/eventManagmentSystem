@@ -98,6 +98,28 @@ getAllEventsAndDetails = async(req, res) => {
         res.status(500).send(error);
     }
 };
+getEventById = async(req, res) => {
+    const eventId = req.params.eventId;
+    try {
+        const event = await queries.getEventByIdQuery(eventId);
+        res.status(200).json({
+            event
+        });
+    } catch (error) {
+        res.status(500).send(error);
+    }
+};
+getEventAndTickets = async(req, res) => {
+    const eventId = req.params.eventId;
+    try {
+        const eventAndTickets = await queries.getEventAndTickets(eventId);
+        res.status(200).json({
+            eventAndTickets
+        })
+    } catch (error) {
+        res.status(400).send(error);
+    }
+};
 
 // ADMIN
 adminGetAllEvents = async(req, res) => {
@@ -131,5 +153,7 @@ module.exports = {
     adminDeleteEvent,
     adminGetAllEvents,
     getAllEvents,
-    getAllEventsAndDetails
+    getAllEventsAndDetails,
+    getEventById,
+    getEventAndTickets
 }
