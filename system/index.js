@@ -11,8 +11,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 app.use(sysRouter);
+app.use(helper.wrongRoute);
 app.use(helper.errorHandler);
-
 
 // SERVER
 // const port = 3000;

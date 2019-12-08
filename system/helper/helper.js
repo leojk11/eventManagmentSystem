@@ -14,9 +14,16 @@ errorHandler = (err, req, res, next) => {
     res.status(err.status).json(errorObj);
 }; 
 
+wrongRoute = (req, res, next) => {
+    var error = new Error("Route not found. Please try with another one!");
+    error.status = 404;
+    next(error);
+};
+
 module.exports = {
     symbols,
     passwordTest,
     cardTestVisa,
-    errorHandler
+    errorHandler,
+    wrongRoute
 }

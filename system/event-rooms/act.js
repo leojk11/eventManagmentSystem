@@ -5,20 +5,10 @@ adminCreateRooms = async(req, res) => {
     const equipAvailable = req.body.Equipement_available;
     const roomCapacity = req.body.Room_capacity;
     
-    if(roomName == ""){
+    if(roomName == "" || equipAvailable == "" || roomCapacity == ""){
         res.status(400).json({
             success: false,
-            message: 'Plase enter room name.'
-        })
-    } else if(equipAvailable == "") {
-        res.status(400).json({
-            success: false,
-            message: 'Please enter available equipement.'
-        })
-    } else if(roomCapacity == ""){
-        res.status(400).json({
-            success: false,
-            message: 'Please enter room capacity.'
+            message: 'You must enter room name, equipement available, room capacity.'
         })
     } else {
         try {
@@ -29,18 +19,9 @@ adminCreateRooms = async(req, res) => {
         } catch (error) {
             res.status(500).send(error);
         }
-    }
+    };
 };
-getAllRooms = async(req, res) => {
-    try {
-        const rooms = await queries.adminGetAllRoomsQuery();
-        res.status(200).json({
-            rooms
-        })
-    } catch (error) {
-        res.status(500).send(error);
-    }
-};
+
 adminDeleteRooms = async(req, res) => {
     const roomId = req.params.roomId;
 
@@ -66,6 +47,17 @@ adminDeleteRooms = async(req, res) => {
     }
 };
 
+getAllRooms = async(req, res) => {
+    try {
+        const rooms = await queries.adminGetAllRoomsQuery();
+        res.status(200).json({
+            rooms
+        })
+    } catch (error) {
+        res.status(500).send(error);
+    }
+};
+
 getSingleRoom = async(req, res) => {
     const roomId = req.params.roomId;
 
@@ -87,7 +79,7 @@ getSingleRoom = async(req, res) => {
             });
         } catch (error) {
             res.status(500).send(error);
-            console.log(error);
+            // console.log(error);
         }
     }
 };
