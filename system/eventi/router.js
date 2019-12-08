@@ -5,8 +5,7 @@ const middlewares = require('../../middlewares/middlewares');
 const router = express.Router();
 
 router.get('/events', actions.getAllEvents);
-router.get('/admin/events', middlewares.verifyToken, actions.adminGetAllEvents);
-router.get('/events-and-details', middlewares.verifyToken, actions.getAllEventsAndDetails);
+router.get('/events-details', middlewares.verifyToken, actions.getAllEventsAndDetails);
 router.get('/event/:eventId', actions.getEventById);
 router.get('/:eventId/event-tickets', actions.getEventAndTickets);
 

@@ -15,10 +15,10 @@ getAllUsersQuery = () => {
 };
 
 // registering user
-function signUpQuery(user, pass) {
+function signUpQuery(firstname, lastname, username, email, companyName, userType, pass) {
     const query = 'INSERT INTO users(Name, Lastname, Username, Password, Email, Company_name, Date_registered, User_type) VALUES(?,?,?,?,?,?,NOW(),?)';
     return new Promise((res, rej) => {
-        connection.query(query, [user.Name, user.Lastname, user.Username, pass, user.Email, user.Company_name, user.User_type],(error, results, fields) => {
+        connection.query(query, [firstname, lastname, username, pass, email, companyName, userType],(error, results, fields) => {
             if(error){
                 rej(error)
             } else {

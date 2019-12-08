@@ -18,21 +18,36 @@ getAllUsers = async(req, res) => {
 getUserInfoAndEvent = async(req, res) => {
     const userId = req.params.userId;
 
-    try {
-        const userInfoAndTickets = await queries.getUserInfoAndEventsQuery(userId);
-        res.status(200).json({
-            userInfoAndTickets
+    const users = await getAllUsersQuery();
+    const userExist = users.some(user => {
+        return userId == user.Id
+    });
+
+    if(userExist == false) {
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${userId}, has not been found.`
         })
-    } catch (error) {
-        res.status(500).send(error);
+    } else {
+        try {
+            const userInfoAndTickets = await queries.getUserInfoAndEventsQuery(userId);
+            res.status(200).json({
+                userInfoAndTickets
+            })
+        } catch (error) {
+            res.status(500).send(error);
+        }
     }
 };
 
 // registering user
 signUp = async(req, res) => {
     const userRequest = req.body;
+    const firstname = req.body.Firstname;
+    const lastname = req.body.Lastname;
     const username = req.body.Username;
     const email = req.body.Email;
+    const companyName = req.body.Comapny_name;
     const password = req.body.Password;
     const userType = req.body.User_type;
 
@@ -81,7 +96,7 @@ signUp = async(req, res) => {
     } else {
         try {
             const passHash = bcrypt.hashSync(userRequest.Password, 10);
-            await queries.signUpQuery(userRequest, passHash);
+            await queries.signUpQuery(firstname, lastname, username, email, companyName, userType, passHash);
             
             res.status(201).json({
                 message: 'User has been created!'
@@ -90,7 +105,7 @@ signUp = async(req, res) => {
             res.status(500).send(error);
         }
     }
-}
+};
 
 // log in
 logIn = async(req, res) => {
@@ -120,29 +135,29 @@ logIn = async(req, res) => {
                 message: `Password ${password}, is too short`
             })
         }
-    }
-
-    try {
-        const user = await queries.logInUserQuery(username);
-        const newUser = user[0];
-        const matchPassword = bcrypt.compareSync(password, newUser.Password);
-
-        if(matchPassword){
-            jwt.sign({user: newUser}, 'secret', (err, token)=>{
-                res.json({
-                    success: true,
-                    token,
-                    message: 'You have been logged in'
+    } else {
+        try {
+            const user = await queries.logInUserQuery(username);
+            const newUser = user[0];
+            const matchPassword = bcrypt.compareSync(password, newUser.Password);
+    
+            if(matchPassword){
+                jwt.sign({user: newUser}, 'secret', (err, token)=>{
+                    res.json({
+                        success: true,
+                        token,
+                        message: 'You have been logged in'
+                    });
+                })
+            } else if(password.length > 5){
+                res.status(409).json({
+                    success: false,
+                    message: 'You have entered wrong password!'
                 });
-            })
-        } else if(password.length > 5){
-            res.status(409).json({
-                success: false,
-                message: 'You have entered wrong password!'
-            });
+            }
+        } catch (error) {
+            res.status(500).send(error);
         }
-    } catch (error) {
-        res.status(500).send(error);
     }
 };
 
@@ -173,14 +188,37 @@ editMyProfile = async(req, res) => {
 // adming can only delete user profiles
 adminDeleteUserProfile = async(req, res) => {
     const userId = req.params.userId;
-    try {
-        await queries.adminDeleteUserProfileQuery(userId);
+    const adminId = req.params.adminId;
 
-        res.status(200).json({
-            message: `User with ID of ${userId}, has been deleted`
-        });
-    } catch (error) {
-        res.status(500).send(error);
+    const userTypes = await queries.adminGetOneUserQuery(adminId);
+    const checkUserType = userTypes[0].User_type;
+    console.log(checkUserType);
+
+    const users = await getAllUsersQuery();
+    const userExist = users.some(user => {
+        return userId == user.Id
+    });
+
+    if(checkUserType == 'client'){
+        res.status(400).json({
+            success: false,
+            message: 'You dont have permissions to do that.'
+        })
+    } else if (userExist == false) {
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${userId}, has not been found.`
+        })
+    } else {
+        try {
+            await queries.adminDeleteUserProfileQuery(userId);
+    
+            res.status(200).json({
+                message: `User with ID of ${userId}, has been deleted`
+            });
+        } catch (error) {
+            res.status(500).send(error);
+        }
     }
 };
 
@@ -191,29 +229,24 @@ adminGetOneUser = async(req, res) => {
     //check if given id = to user id
     const users = await getAllUsersQuery();
     const userExist = users.some(user => {
-        return user.id == userId
+        return userId == user.Id
     });
     if(!userExist) {
         res.status(400).json({
             message: `User with ID of ${userId}, has not been found. Try with another one.`
         })
-    }
-
-    try {
-        const user = await queries.adminGetOneUserQuery(userId);
-        res.status(200).json({
-            message: `User with ID ${userId}, has been found.`,
-            user
-        })
-    } catch (error) {
-        res.status(500).send(error);
+    } else {
+        try {
+            const user = await queries.adminGetOneUserQuery(userId);
+            res.status(200).json({
+                message: `User with ID ${userId}, has been found.`,
+                user
+            })
+        } catch (error) {
+            res.status(500).send(error);
+        }
     }
 };
-
-
-
-
-
 
 module.exports = {
     signUp,
@@ -223,4 +256,4 @@ module.exports = {
     adminGetOneUser,
     getAllUsers,
     getUserInfoAndEvent
-}
+};

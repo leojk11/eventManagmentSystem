@@ -1,10 +1,10 @@
 const connection = require('../../DB/database');
 
-createEventQuery = (userId, event) => {
+createEventQuery = (title, shortInfo, host, userId) => {
     console.log(userId);
     const query = 'INSERT INTO events(Title, Short_info, Host, User_id) VALUES (?,?,?,?)';
     return new Promise((res, rej) => {
-        connection.query(query, [event.Title, event.Short_info, event.Host, userId],(error, results, fields)=>{
+        connection.query(query, [title, shortInfo, host, userId],(error, results, fields)=>{
             if(error){
                 rej(error);
                 console.log(error);
@@ -40,7 +40,7 @@ updateEventDetailsQuery = (startTime, endTime, date, ticketPrice, availableTicke
 };
 
 getAllEventsQuery = () => {
-    const query = "SELECT Title, Short_info, Host FROM events";
+    const query = "SELECT * FROM events";
     return new Promise((res, rej) => {
         connection.query(query, (error, results, fields) => {
             if(error){
@@ -51,7 +51,7 @@ getAllEventsQuery = () => {
         });
     });
 };
-getAllEventsAndDetails = () => {
+getAllEventsAndDetailsQuery = () => {
     const query = "SELECT * FROM event_details LEFT JOIN events ON event_details.Event_id = events.Id";
     return new Promise((res, rej) => {
         connection.query(query, (error, results, fields) => {
@@ -88,19 +88,7 @@ getEventAndTickets = (eventId) => {
     });
 };
 
-// ADMIN
-adminGetAllEventsQuery = () => {
-    const query = "SELECT * FROM events";
-    return new Promise((res, rej) => {
-        connection.query(query, (error, results, fields) => {
-            if(error){
-                rej(error)
-            } else {
-                res(results)
-            }
-        });
-    });
-};
+
 adminDeleteEventQuery = (eventId) => {
     const query = "DELETE FROM events WHERE Id = ?";
     return new Promise((res, rej)=> {
@@ -128,13 +116,12 @@ adminGetAllEventDetailsQuery = () => {
 
 
 module.exports = {
-    adminGetAllEventsQuery,
     adminDeleteEventQuery,
     adminGetAllEventDetailsQuery,
     createEventQuery,
     addEventDetailsQuery,
     getAllEventsQuery,
-    getAllEventsAndDetails,
+    getAllEventsAndDetailsQuery,
     getEventByIdQuery,
     getEventAndTickets,
     updateEventDetailsQuery
