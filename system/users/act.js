@@ -1,9 +1,10 @@
 const queries = require('./query');
+const evnetsQueries = require('../eventi/query');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const helper = require('../helper/helper');
 
-// get all users
+
 getAllUsers = async(req, res) => {
     try {
         const users = await queries.getAllUsersQuery();
@@ -14,11 +15,62 @@ getAllUsers = async(req, res) => {
         res.status(500).send(error);
     }
 };
-// geting user and user's events
+
 getUserInfoAndEvent = async(req, res) => {
     const userId = req.params.userId;
 
     const users = await getAllUsersQuery();
+    const userExist = users.some(user => {
+        return userId == user.Id
+    });
+    
+    const events = await evnetsQueries.getAllEventsQuery();
+    const eventExist = events.some(event => {
+        return userId == event.User_id
+    });
+    // console.log(eventExist);
+
+    if(userExist == false) {
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${userId}, has not been found.`
+        })
+    } else if(eventExist == false) {
+        res.status(400).json({
+            message: `User with ID of ${userId}, does not have any events.`
+        })
+    } 
+    else {
+        try {
+            const userInfoAndEvents = await queries.getUserInfoAndEventsQuery(userId);
+            const events = userInfoAndEvents.map(events => {
+                const eventsObj = {
+                    title: events.Title,
+                    shortInfo: events.Short_info,
+                    host: events.Host
+                }
+                return eventsObj
+            })
+            // console.log(events[0].title);
+            res.status(200).json({
+                userInfo:{
+                    name: userInfoAndEvents[0].Name,
+                    lastName: userInfoAndEvents[0].Lastname,
+                    email: userInfoAndEvents[0].Email
+                },
+                events
+            })
+            
+        } catch (error) {
+            res.status(500).send(error);
+        }
+    }
+};
+
+getMyProfile = async(req, res) => {
+    const userId = req.params.userId;
+
+    const users = await queries.getAllUsersQuery();
     const userExist = users.some(user => {
         return userId == user.Id
     });
@@ -30,9 +82,9 @@ getUserInfoAndEvent = async(req, res) => {
         })
     } else {
         try {
-            const userInfoAndTickets = await queries.getUserInfoAndEventsQuery(userId);
+            const myProfile = await queries.adminGetOneUserQuery(userId);
             res.status(200).json({
-                userInfoAndTickets
+                myProfile
             })
         } catch (error) {
             res.status(500).send(error);
@@ -40,7 +92,7 @@ getUserInfoAndEvent = async(req, res) => {
     }
 };
 
-// registering user
+
 signUp = async(req, res) => {
     const userRequest = req.body;
     const firstname = req.body.Firstname;
@@ -51,17 +103,22 @@ signUp = async(req, res) => {
     const password = req.body.Password;
     const userType = req.body.User_type;
 
-    const emails = await queries.adminGetOnlyEmailsQuery();
+    const emails = await queries.getAllUsersQuery();
     const emailExist = emails.some(user => {
         return email === user.Email
     });
 
-    const usernames = await queries.adminGetOnlyUsernameQuery();
+    const usernames = await queries.getAllUsersQuery();
     const usernameExists = usernames.some(user => {
         return username === user.Username
     });
 
-    if(emailExist) {
+    if(firstname == "" || lastname == "" || username == "" || email == "" || password == "" || userType == ""){
+        res.status(400).json({
+            success: false,
+            message: 'All fields must be filled with information.'
+        })
+    } else if(emailExist) {
         res.status(409).json({
             success: false,
             message: `Email ${email}. is already in use. Try with another one.`
@@ -85,7 +142,7 @@ signUp = async(req, res) => {
     } else if(helper.passwordTest.test(password) == false) {
         return res.status(400).json({
             success: false,
-            message: 'Your password must contain 1 lower case letter, 1 capital letter, 1 or more numbers and a specia character as !@#$%^&*'
+            message: 'Your password must contain 1 lower case letter, 1 capital letter, 1 or more numbers and a special character as !@#$%^&*'
         })
     } 
     else if(username.length < 4){
@@ -107,18 +164,28 @@ signUp = async(req, res) => {
     }
 };
 
-// log in
+
 logIn = async(req, res) => {
     const username = req.body.Username;
-    const email = req.body.Email;
+    // const email = req.body.Email;
     const password = req.body.Password;
 
-    const usernames = await queries.adminGetOnlyUsernameQuery();
+    const usernames = await queries.getAllUsersQuery();
     const usernameExists = usernames.some(user => {
         return username === user.Username
     });
 
-    if(!usernameExists){
+    if(username == ""){
+        res.status(400).json({
+            success: false,
+            message: 'Please enter your username.'
+        })
+    } else if(password == ""){
+        res.status(400).json({
+            success: false,
+            message: 'Please enter your password.'
+        })
+    } else if(!usernameExists){
         res.status(400).json({
             success: false,
             message: `Username ${username}, has not been found. Please try with another one.`
@@ -126,15 +193,13 @@ logIn = async(req, res) => {
     } else if(username.length <= 4) {
         res.status(409).json({
             success: false,
-            message: `Username ${username}, is too short`
+            message: `Username ${username}, is not valid. Your username should contain 4 or more characters.`
         })
     } else if(password.length <= 1){
-        if(password.length <= 6) {
-            res.status(409).json({
-                success: false,
-                message: `Password ${password}, is too short`
-            })
-        }
+        res.status(409).json({
+            success: false,
+            message: `Password ${password}, is not valid.`
+        })
     } else {
         try {
             const user = await queries.logInUserQuery(username);
@@ -144,17 +209,11 @@ logIn = async(req, res) => {
             if(matchPassword){
                 jwt.sign({user: newUser}, 'secret', (err, token)=>{
                     res.json({
-                        success: true,
                         token,
-                        message: 'You have been logged in'
+                        message: 'You have been logged in.'
                     });
                 })
-            } else if(password.length > 5){
-                res.status(409).json({
-                    success: false,
-                    message: 'You have entered wrong password!'
-                });
-            }
+            } 
         } catch (error) {
             res.status(500).send(error);
         }
@@ -162,30 +221,73 @@ logIn = async(req, res) => {
 };
 
 
-// editing profile
+
 editMyProfile = async(req, res) => {
+    const userId = req.params.userId;
+
     const name = req.body.Name;
     const lastname = req.body.Lastname;
     const username = req.body.Username;
     const email = req.body.Email;
     const companyName = req.body.Company_name;
+    
 
-    const updReqList = [name, lastname, username, email, companyName];
-    const userId = req.params.userId;
-    try {
-        const updatedUser = await queries.editMyProfileQuery(updReqList, userId);
+    const users = await queries.getAllUsersQuery();
+    const userExist = users.some(user => {
+        return userId == user.Id
+    });
 
-        res.status(200).json({
-            message: `User with ID of ${userId}, has been updated.`,
-            updatedUser
+    const uneditedUsername = users.filter(user => {
+        if(username == "") {
+            username == user.Username
+        } else {
+            user.Username = username
+        }
+
+        if(name == "") {
+            name == user.Name
+        } else {
+            user.Name = name
+        }
+
+        if(email == ""){
+            email == user.Email
+        } else {
+            user.Email = email
+        }
+
+        if(lastname == ""){
+            lastName == user.Lastname
+        } else {
+            user.Lastname = lastname
+        }
+        return user;
+    });
+
+    const finalResults = uneditedUsername[0];
+    console.log(finalResults.Username);
+
+    if(userExist == false) {
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${userId}, has not been found.`
         })
-    } catch (error) {
-        res.status(500).send(error);
+    } 
+    else {
+        try {
+            await queries.editMyProfileQuery(finalResults.Name, finalResults.Lastname, finalResults.Username, finalResults.Email, companyName, userId);
+    
+            res.status(200).json({
+                message: `User with ID of ${userId}, has been updated.`
+            })
+        } catch (error) {
+            res.status(500).send(error);
+        }
     }
 };
 
 // ADMIN
-// adming can only delete user profiles
+
 adminDeleteUserProfile = async(req, res) => {
     const userId = req.params.userId;
     const adminId = req.params.adminId;
@@ -199,17 +301,18 @@ adminDeleteUserProfile = async(req, res) => {
         return userId == user.Id
     });
 
-    if(checkUserType == 'client'){
-        res.status(400).json({
-            success: false,
-            message: 'You dont have permissions to do that.'
-        })
-    } else if (userExist == false) {
+    if (userExist == false) {
         res.status(400).json({
             success: false,
             message: `User with ID of ${userId}, has not been found.`
         })
-    } else {
+    }
+    else if(checkUserType == 'client'){
+        res.status(400).json({
+            success: false,
+            message: 'You dont have permissions to do that.'
+        })
+    }  else {
         try {
             await queries.adminDeleteUserProfileQuery(userId);
     
@@ -222,15 +325,15 @@ adminDeleteUserProfile = async(req, res) => {
     }
 };
 
-// admin can only get one user
+
 adminGetOneUser = async(req, res) => {
     const userId = req.params.userId;
 
-    //check if given id = to user id
     const users = await getAllUsersQuery();
     const userExist = users.some(user => {
         return userId == user.Id
     });
+
     if(!userExist) {
         res.status(400).json({
             message: `User with ID of ${userId}, has not been found. Try with another one.`
@@ -239,7 +342,6 @@ adminGetOneUser = async(req, res) => {
         try {
             const user = await queries.adminGetOneUserQuery(userId);
             res.status(200).json({
-                message: `User with ID ${userId}, has been found.`,
                 user
             })
         } catch (error) {
@@ -255,5 +357,6 @@ module.exports = {
     adminDeleteUserProfile,
     adminGetOneUser,
     getAllUsers,
-    getUserInfoAndEvent
+    getUserInfoAndEvent,
+    getMyProfile
 };

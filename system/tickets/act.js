@@ -10,15 +10,15 @@ createTicket = async(req, res) => {
     const eventId = req.params.eventId;
     const userId = req.params.userId;
 
-    const user = await userQueries.adminGetOneUserQuery(userId);
+    const user = await userQueries.getAllUsersQuery();
     const userExists = user.some(user => {
         return userId == user.Id
     });
 
-    const event = await eventQueries.getEventByIdQuery(eventId);
+    const event = await eventQueries.getAllEventsQuery();
     const eventExists = event.some(event => {
         return eventId == event.Id
-    })
+    });
 
     if(userExists == false) {
         res.status(400).json({
@@ -30,7 +30,12 @@ createTicket = async(req, res) => {
             success: false,
             message: `Event with ID of ${eventId}, has not been found.`
         })
+    } else if(price == "" || availableAm == "" || eventInfo == "") {
+        res.status(400).json({
+            message: 'Please enter ticket price, available amount and some event info.'
+        })
     } 
+
     else {
         try {
             await queries.createTicketQuery(price, availableAm, eventInfo, eventId, userId);

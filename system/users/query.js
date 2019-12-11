@@ -43,11 +43,11 @@ logInUserQuery = (username) => {
 };
 
 // editing user profiles
-editMyProfileQuery = (user, userId) => {
-    console.log(user);
+editMyProfileQuery = (name, lastname, username, email, companyName, userId) => {
+    // console.log(user);
     const query = "UPDATE users SET Name = ?, Lastname = ?, Username = ?, Email = ?, Company_name = ? WHERE Id = ?";
     return new Promise((res, rej)=> {
-        connection.query(query, [user[0], user[1], user[2], user[3], user[4], userId], (error, results, fields) => {
+        connection.query(query, [name, lastname, username, email, companyName, userId], (error, results, fields) => {
             if(error){
                 rej(error)
             } else {
@@ -59,7 +59,7 @@ editMyProfileQuery = (user, userId) => {
 
 // geting user and user's events
 getUserInfoAndEventsQuery = (userId) => {
-    const query = "SELECT Name, Lastname, Email, Price, Available_amount, Event_info FROM users LEFT JOIN tickets ON tickets.User_id = users.Id WHERE users.Id = ?";
+    const query = "SELECT Name, Lastname, Email, Title, Short_info FROM users LEFT JOIN events ON events.User_id = users.Id WHERE users.Id = ?";
     return new Promise((res, rej) => {
         connection.query(query, [userId], (error, results, fields) => {
             if(error){
@@ -99,31 +99,6 @@ adminGetOneUserQuery = (userId) => {
         });
     });
 };
-adminGetOnlyUsernameQuery = () => {
-    const query = "SELECT Username FROM users";
-    return new Promise((res, rej) => {
-        connection.query(query, (error, results, fields) => {
-            if(error){
-                rej(error)
-                console.log(error);
-            } else {
-                res(results)
-            }
-        });
-    });
-};
-adminGetOnlyEmailsQuery = () => {
-    const query = "SELECT Email FROM users";
-    return new Promise((res, rej) => {
-        connection.query(query, (error, results, fields) => {
-            if(error){
-                rej(error)
-            } else {
-                res(results)
-            }
-        });
-    });
-};
 
 
 
@@ -133,8 +108,6 @@ module.exports = {
     editMyProfileQuery,
     adminDeleteUserProfileQuery,
     adminGetOneUserQuery,
-    adminGetOnlyUsernameQuery,
-    adminGetOnlyEmailsQuery,
     getAllUsersQuery,
     getUserInfoAndEventsQuery
 };

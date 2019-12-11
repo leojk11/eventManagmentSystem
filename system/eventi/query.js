@@ -1,13 +1,13 @@
 const connection = require('../../DB/database');
 
 createEventQuery = (title, shortInfo, host, userId) => {
-    console.log(userId);
+    // console.log(userId);
     const query = 'INSERT INTO events(Title, Short_info, Host, User_id) VALUES (?,?,?,?)';
     return new Promise((res, rej) => {
         connection.query(query, [title, shortInfo, host, userId],(error, results, fields)=>{
             if(error){
                 rej(error);
-                console.log(error);
+                // console.log(error);
             } else {
                 res(results)
             }
@@ -27,7 +27,8 @@ addEventDetailsQuery = (startTime, endTime, date, ticketPrice, availableTickets,
     });
 };
 updateEventDetailsQuery = (startTime, endTime, date, ticketPrice, availableTickets, eventRoom, eventId) => {
-    const query = "UPDATE event_details SET Start_time = ?, End_time = ?, Date = ?, Ticket_price = ?, Available_ticket = ?, Event_room = ? WHERE Id = ?";
+    // console.log(startTime)
+    const query = "UPDATE event_details SET Start_time = ?, End_time = ?, Date = ?, Ticket_price = ?, Available_ticket = ?, Event_room = ? WHERE Event_id = ?";
     return new Promise((res, rej) => {
         connection.query(query, [startTime, endTime, date, ticketPrice, availableTickets, eventRoom, eventId], (error, results, fields) => {
             if(error) {
@@ -52,9 +53,21 @@ getAllEventsQuery = () => {
     });
 };
 getAllEventsAndDetailsQuery = () => {
-    const query = "SELECT * FROM event_details LEFT JOIN events ON event_details.Event_id = events.Id";
+    const query = "SELECT * FROM events LEFT JOIN event_details ON event_details.Event_id = events.Id";
     return new Promise((res, rej) => {
         connection.query(query, (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
+getSingleEventAndDetailsQuery = (eventId) => {
+    const query = "SELECT * FROM event_details LEFT JOIN events ON event_details.Event_id = events.Id WHERE event_details.Event_id = ?";
+    return new Promise((res, rej) => {
+        connection.query(query, [eventId], (error, results, fields) => {
             if(error){
                 rej(error)
             } else {
@@ -124,5 +137,6 @@ module.exports = {
     getAllEventsAndDetailsQuery,
     getEventByIdQuery,
     getEventAndTickets,
+    getSingleEventAndDetailsQuery,
     updateEventDetailsQuery
 }

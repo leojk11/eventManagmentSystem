@@ -11,17 +11,23 @@ createEvent = async(req, res) => {
 
     const userId = req.params.userId;
 
-    const users = await userQueires.adminGetOneUserQuery(userId);
+    const users = await userQueries.adminGetOneUserQuery(userId);
     const userExists = users.some(user => {
         return userId == user.Id
-    })
+    });
 
     if(userExists == false) {
         res.status(400).json({
             success: false,
             message: `User with ID if ${userId}, has not been found`
         })
-    } else {
+    } else if(title == "" || shortInfo == "" || host == "") {
+        res.status(400).json({
+            success: false,
+            message: 'Please enter event title, short info about your event and who is the host.'
+        })
+    } 
+    else {
         try {
             await queries.createEventQuery(title, shortInfo, host, userId);
             res.status(200).json({
@@ -44,7 +50,7 @@ addDetails = async(req, res) => {
     const availableTickets = req.body.Available_tickets;
     const eventRoom = req.body.Event_room;
 
-    const events = await userQueries.adminGetOneUserQuery(eventId);
+    const events = await queries.getAllEventsQuery();
     const eventExists = events.some(event => {
         return eventId == event.Id
     });
@@ -69,7 +75,8 @@ addDetails = async(req, res) => {
             success: false,
             message: 'You must enter start time, end time, date, ticket price and event room number.'
         })
-    } else {
+    } 
+    else {
         try {
             await queries.addEventDetailsQuery(startTime, endTime, date, ticketPrice, availableTickets, eventRoom, eventId);
             res.status(200).json({
@@ -91,17 +98,45 @@ updateDetails = async(req, res) => {
     const availableTickets = req.body.Available_tickets;
     const eventRoom = req.body.Event_room;
 
-
-    const events = await queries.adminGetAllEventDetailsQuery();
+    const events = await queries.getAllEventsAndDetailsQuery();
     const eventExists = events.some(event => {
-        return eventId == event.Id
+        return eventId == event.Event_id
     });
 
     const rooms = await roomsQueires.getAllRoomsQuery();
     const roomExists = rooms.some(room => {
         return eventRoom == room.Id
     })
-    
+
+    const eventToUpd = events.filter(event => {
+        if(startTime == ""){
+            startTime == event.Start_time
+        } else {
+            event.Start_time = startTime
+        }
+
+        if(endTime == ""){
+            endTime == event.End_time
+        } else {
+            event.End_time = endTime
+        }
+
+        if(ticketPrice == ""){
+            ticketPrice == event.Ticket_price
+        } else {
+            event.Ticket_price = ticketPrice
+        }
+
+        if(eventRoom == ""){
+            eventRoom == event.Event_room
+        } else {
+            event.Event_room = eventRoom
+        }
+        return event
+    });
+    const finalResults = eventToUpd[0];
+    console.log(finalResults.Ticket_price);
+
     if(eventExists == false) {
         res.status(400).json({
             success: false,
@@ -115,13 +150,14 @@ updateDetails = async(req, res) => {
     } 
     else {
         try {
-            await queries.updateEventDetailsQuery(startTime, endTime, date, ticketPrice, availableTickets, eventRoom, eventId);
+            await queries.updateEventDetailsQuery(finalResults.Start_time, finalResults.End_time, date, finalResults.Ticket_price, availableTickets, finalResults.Event_room, eventId);
 
             res.status(200).json({
                 message: `Event with the ID of ${eventId}, has been updated!`
             });
         } catch (error) {
             res.status(500).send(error);
+            // console.log(error);
         }
     }
     
@@ -141,8 +177,30 @@ getAllEvents = async(req, res) => {
 getAllEventsAndDetails = async(req, res) => {
     try {
         const eventsAndDetails = await queries.getAllEventsAndDetailsQuery();
+        const events = eventsAndDetails.map(events => {
+            const eventObj = {
+                id: events.Id,
+                title: events.Title,
+                short_info: events.Short_info,
+                host: events.Host,
+                user_id: events.User_id
+            }
+            return eventObj
+        })
+        const eventDetails = eventsAndDetails.map(event => {
+            const detailsObj = {
+                start_time: event.Start_time,
+                end_time: event.End_time,
+                date: event.Date,
+                available_tickets: event.Available_tickets,
+                event_room: event.Event_room,
+                event_id: event.Event_id
+            }
+            return detailsObj
+        })
         res.status(200).json({
-            eventsAndDetails
+            events,
+            eventDetails
         })
     } catch (error) {
         res.status(500).send(error);
@@ -167,6 +225,29 @@ getEventById = async(req, res) => {
             res.status(200).json({
                 event
             });
+        } catch (error) {
+            res.status(500).send(error);
+        }
+    }
+};
+getSingleEventAndDetails = async(req, res) => {
+    const eventId = req.params.eventId;
+
+    const events = await queries.getAllEventsQuery();
+    const eventExist = events.some(event => {
+        return eventId == event.Id
+    });
+
+    if(eventExist == false){
+        res.status(400).json({
+            message: `Event with ID of ${eventId}, has not been found.`
+        })
+    } else {
+        try {
+            const eventAndDetails = await queries.getSingleEventAndDetailsQuery(eventId);
+            res.status(200).json({
+                eventAndDetails
+            })
         } catch (error) {
             res.status(500).send(error);
         }
@@ -200,25 +281,46 @@ getEventAndTickets = async(req, res) => {
 
 adminDeleteEvent = async(req, res) => {
     const eventId = req.params.eventId;
+    const userId = req.params.userId;
 
     const events = await queries.getAllEventsQuery();
-    const eventExists = events.some(event => {
+    const eventExist = events.some(event => {
         return eventId == event.Id
     });
 
-    if(eventExists == false) {
+    const users = await userQueries.getAllUsersQuery();
+    const userExist = users.some(user => {
+        return userId == user.Id
+    });
+
+    if(userExist == false) {
+        res.status(400).json({
+            message: `User with ID of ${userId}, has not been found.`
+        })
+    }
+    else if(eventExist == false) {
         res.status(400).json({
             success: false,
             message: `Event with ID of ${eventId}, has not been found.`
         })
     } else {
-        try {
-            await queries.adminDeleteEventQuery(eventId);
-            res.status(200).json({
-                message: `Event with ID of ${eventId}, has been deleted.`
+        const userTypes = await userQueries.adminGetOneUserQuery(userId);
+        const checkUserType = userTypes[0].User_type;
+        // console.log(checkUserType);
+        
+        if(checkUserType == 'admin'){
+            try {
+                await queries.adminDeleteEventQuery(eventId);
+                res.status(200).json({
+                    message: `Event with ID of ${eventId}, has been deleted.`
+                })
+            } catch (error) {
+                res.status(500).send(error);
+            }
+        } else {
+            res.status(400).json({
+                message: `User with ID of ${userId}, does not have permissions to do that.`
             })
-        } catch (error) {
-            res.status(500).send(error);
         }
     }
 };
@@ -233,5 +335,6 @@ module.exports = {
     getAllEvents,
     getAllEventsAndDetails,
     getEventById,
-    getEventAndTickets
+    getEventAndTickets,
+    getSingleEventAndDetails
 }

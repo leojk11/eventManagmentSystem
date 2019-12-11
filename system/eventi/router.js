@@ -6,14 +6,15 @@ const router = express.Router();
 
 router.get('/events', actions.getAllEvents);
 router.get('/events-details', middlewares.verifyToken, actions.getAllEventsAndDetails);
-router.get('/event/:eventId', actions.getEventById);
-router.get('/:eventId/event-tickets', actions.getEventAndTickets);
+router.get('/events-details/:eventId', actions.getSingleEventAndDetails);
+router.get('/events/:eventId', actions.getEventById);
+router.get('/event-ticket/:eventId', actions.getEventAndTickets);
 
-router.post('/:userId/create-event', middlewares.verifyToken, actions.createEvent);
+router.post('/create-event/:userId', middlewares.verifyToken, actions.createEvent);
 router.post('/:eventId/add-details', middlewares.verifyToken, actions.addDetails);
 
-router.put('/:eventId/update-event', middlewares.verifyToken, actions.updateDetails);
+router.put('/update-event/:eventId', middlewares.verifyToken, actions.updateDetails);
 
-router.delete('/admin/:eventId/delete-event', middlewares.verifyToken, actions.adminDeleteEvent);
+router.delete('/admin/:userId/delete-event/:eventId', middlewares.verifyToken, actions.adminDeleteEvent);
 
 module.exports = router;

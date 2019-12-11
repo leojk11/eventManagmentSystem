@@ -18,10 +18,10 @@ addCard = async(req,res) => {
     })
     // console.log(cardNumbersExist);
 
-    if(cardType.length < 1){
+    if(cardType == "" || exMounth == "" || exYear == "" || cardNumber == "" || cardOwnerName == ""){
         res.status(400).json({
             success: false,
-            message: 'Please enter card type.'
+            message: 'Please enter card type, expiring mounth, expiring year, card number and card owner name.'
         })
     } else if(exMounth.length < 1 || exMounth > 12){
         res.status(400).json({
@@ -69,16 +69,28 @@ insertMoney = async(req, res) => {
 
     const userPaymentInfo = await queries.getOneCardQuery(userId);
     const moneyAmount = userPaymentInfo[0].Money;
-    console.log(moneyAmount);
+    // console.log(moneyAmount);
 
-    if(cardNumber.length < 16){
+
+    if(cardNumber == "" || amount == ""){
+        res.statusn(400).json({
+            success: false,
+            message: 'Please enter card number and how much money you want to add.'
+        })
+    }
+    else if(cardNumber.length < 16){
         res.status(400).json({
             success: false,
             message: `Card number ${cardNumber}, is not valid.`
         })
-    } else if(cardNumbersExist == true) {
+    } else if(cardNumbersExist == false) {
+        res.status(400).json({
+            success: false,
+            message: `Card number ${cardNumber}, does not exist.`
+        })
+    } else {
         const addedCash = moneyAmount + amount;
-        console.log(addedCash);
+        // console.log(addedCash);
         try {
             await queries.insertMoneyQuery(addedCash, userId);
             res.status(200).json({
@@ -87,13 +99,7 @@ insertMoney = async(req, res) => {
         } catch (error) {
             res.status(500).send(error);
         }
-    } else {
-        res.status(400).json({
-            success: false,
-            message: `Card number ${cardNumber}, does not exist.`
-        })
     }
-    
 };
 buyTicket = async(req, res) => {
     const userId = req.params.userId;
@@ -130,7 +136,12 @@ buyTicket = async(req, res) => {
         return userCreditCard == card.Card_number
     });
 
-    if(ticketExist == false) {
+    if(userCreditCard == "" || ticketAmount == "") {
+        res.status(400).json({
+            success: false,
+            message: 'Please enter user credit card and ticket amount.'
+        })
+    } else if(ticketExist == false) {
         res.status(500).json({
             success: false,
             message: `Ticket with ID of ${ticketId}, does not exist.`
@@ -155,7 +166,7 @@ buyTicket = async(req, res) => {
             success: false,
             message: 'You don\'t have enough money to purchase that.'
         })
-    } 
+    }
     else {
         try {
 
@@ -214,13 +225,25 @@ adminGelAllCards = async(req, res) => {
 getOneCard = async(req, res) => {
     const userId = req.params.userId;
 
-    try {
-        const card = await queries.getOneCardQuery(userId);
-        res.status(200).send(card);
-    } catch (error) {
-        res.status(500).send(error);
+    const users = await userQueries.getAllUsersQuery();
+    const userExist = users.some(user => {
+        return userId == user.Id
+    });
+
+    if(userExist == false) {
+        res.status(400).json({
+            success: false,
+            message: `User with the ID of ${userId}, has not been found.`
+        })
+    } else {
+        try {
+            const card = await queries.getOneCardQuery(userId);
+            res.status(200).send(card);
+        } catch (error) {
+            res.status(500).send(error);
+        }
     }
-}
+};
 
 module.exports = {
     addCard,
