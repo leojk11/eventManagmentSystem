@@ -4,14 +4,14 @@ const middlewares = require('../../middlewares/middlewares');
 
 const router = express.Router();
 
-router.post('/add-card/:id',  actions.addCard);
+router.post('/add-card/:id',  middlewares.verifyToken, actions.addCard);
 
-router.patch('/add-money/:userId', actions.insertMoney);
-router.patch('/buy-ticket/:ticketId/:userId', actions.buyTicket);
+router.patch('/add-money/:userId', middlewares.verifyToken, actions.insertMoney);
+router.patch('/buy-ticket/:ticketId/:userId', middlewares.verifyToken, actions.buyTicket);
 
-router.delete('/delete-card/:cardId', actions.deleteCard);
+router.delete('/delete-card/:cardId', middlewares.verifyToken, actions.deleteCard);
 
-router.get('/admin/all-cards', actions.adminGelAllCards);
-router.get('/my-card/:userId', actions.getOneCard);
+router.get('/admin/all-cards', middlewares.verifyToken, actions.adminGelAllCards);
+router.get('/my-card/:userId', middlewares.verifyToken, actions.getOneCard);
 
 module.exports = router;

@@ -5,17 +5,16 @@ var cardTestVisa = /^(?:4[0-9]{12}(?:[0-9]{3})?)$/;
 
 errorHandler = (err, req, res, next) => {
     var errorObj = {
-        success: false,
         message: err.message
     };
-
     res.status(err.status).json(errorObj);
 }; 
 
-wrongRoute = (req, res, next) => {
-    var error = new Error("Route not found. Please try with another one!");
-    error.status = 404;
-    next(error);
+wrongRoute = (req, res) => {
+    var wrongRouteErrorObj = {
+        message: 'Wrong route. Please try with another one.'
+    };
+    res.status(400).json(wrongRouteErrorObj);
 };
 
 module.exports = {

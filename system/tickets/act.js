@@ -20,17 +20,25 @@ createTicket = async(req, res) => {
         return eventId == event.Id
     });
 
+    const tickets = await queries.getAllTicketsQuery();
+    const userHaveTicket = tickets.some(tikcet => {
+        return userId == user.User_id
+    });
+
     if(userExists == false) {
         res.status(400).json({
-            success: false,
             message: `User with ID of ${userId}, has not been found.`
         })
     } else if(eventExists == false) {
-        res.statusn(400).json({
-            success: false,
+        res.status(400).json({
             message: `Event with ID of ${eventId}, has not been found.`
         })
-    } else if(price == "" || availableAm == "" || eventInfo == "") {
+    } else if(userHaveTicket == true) {
+        res.status(400).json({
+            message: `User with ID of ${userId}, already have created ticket. One user can only have one ticket.`
+        })
+    } 
+    else if(price == "" || availableAm == "" || eventInfo == "") {
         res.status(400).json({
             message: 'Please enter ticket price, available amount and some event info.'
         })
@@ -44,6 +52,7 @@ createTicket = async(req, res) => {
             })
         } catch (error) {
             res.status(500).send(error);
+            console.log(error);
         }
     }
 };
@@ -67,27 +76,41 @@ getMyTickets = async(req, res) => {
         return userId == user.Id
     });
 
-    const tickets = await queries.adminGetAllTicketsQuery();
+    const tickets = await queries.getAllTicketsQuery();
     const userTicketExists = tickets.some(user => {
         return userId == user.User_id
     })
 
     if(userExists == false){
         res.status(400).json({
-            success: false,
             message: `User with ID of ${userId}, does not exist.`
         })
     } else if(userTicketExists == false) {
         res.status(400).json({
-            success: false,
             message: `User with ID of ${userId}, does not have any tickets.`
         })
     } 
     else {
         try {
-            const myTickets = await queries.getMyTicketsQuery(userId);
+            const myTickets = await queries.getUserInfoAndTicketsQuery(userId);
+            const ticketInfo = myTickets.map(info => {
+                const ticketsObj = {
+                    eventInfo: info.Event_info,
+                    availableAmount: info.Available_amount,
+                    price: info.Price,
+                    eventId: info.Event_id
+                }
+                return ticketsObj
+            })
             res.status(200).json({
-                myTickets
+                userInfo: {
+                    id: myTickets[0].User_id,
+                    firstname: myTickets[0].Name,
+                    lastname: myTickets[0].Lastname,
+                    username: myTickets[0].Username,
+                    email: myTickets[0].Email,
+                    tickets: ticketInfo
+                },
             });
         } catch (error) {
             res.status(500).send(error);
@@ -96,10 +119,9 @@ getMyTickets = async(req, res) => {
 };
 
 
-// ADMIN
-adminGetAllTickets = async(req, res) => {
+getAllTickets = async(req, res) => {
     try {
-        const tickets = await queries.adminGetAllTicketsQuery();
+        const tickets = await queries.getAllTicketsQuery();
         res.status(200).json({
             tickets
         })
@@ -108,7 +130,7 @@ adminGetAllTickets = async(req, res) => {
     }
 };
 
-adminGetOnlyOneTicket = async(req, res) => {
+getOnlyOneTicket = async(req, res) => {
     const eventId = req.params.eventId;
 
     const events = await eventQueries.getEventByIdQuery(eventId);
@@ -116,24 +138,22 @@ adminGetOnlyOneTicket = async(req, res) => {
         return eventId == event.Id
     });
 
-    const tickets = await queries.adminGetOnlyOneTicketQuery(eventId);
+    const tickets = await queries.getOnlyOneTicketQuery(eventId);
     const eventTicketsExists = tickets.some(ticket => {
         return eventId == ticket.Event_id
     });
 
     if(eventExists == false) {
         res.status(400).json({
-            success: false,
             message: `Event with ID of ${eventId}, has not been found.`
         });
     } else if (eventTicketsExists == false){
-        res.status(400).jso({
-            success: false,
+        res.status(400).json({
             message: `Event with ID of ${eventId}, does not have any tickets.`
         });
     } else {
         try {
-            const ticket = await queries.adminGetOnlyOneTicketQuery(eventId);
+            const ticket = await queries.getOnlyOneTicketQuery(eventId);
             res.status(200).json({
                 ticket
             });
@@ -147,6 +167,6 @@ module.exports = {
     createTicket,
     getAllAvailableTickets,
     getMyTickets,
-    adminGetAllTickets,
-    adminGetOnlyOneTicket
+    getAllTickets,
+    getOnlyOneTicket
 }

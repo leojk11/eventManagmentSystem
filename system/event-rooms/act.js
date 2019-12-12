@@ -7,7 +7,6 @@ adminCreateRooms = async(req, res) => {
     
     if(roomName == "" || equipAvailable == "" || roomCapacity == ""){
         res.status(400).json({
-            success: false,
             message: 'You must enter room name, equipement available, room capacity.'
         })
     } else {
@@ -32,7 +31,6 @@ adminDeleteRooms = async(req, res) => {
 
     if(roomExists == false) {
         res.status(400).json({
-            success: false,
             message: `Room with ID of ${roomId}, has not been found.`
         })
     } else {
@@ -68,7 +66,6 @@ getSingleRoom = async(req, res) => {
 
     if(roomExists == false) {
         res.status(400).json({
-            success: false,
             message: `Room with ID of ${roomId}, has not been found.`
         })
     } else {

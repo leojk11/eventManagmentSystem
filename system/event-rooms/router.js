@@ -4,11 +4,11 @@ const middlewares = require('../../middlewares/middlewares');
 
 const router = express.Router();
 
-router.get('/admin/rooms', actions.getAllRooms);
+router.get('/rooms', actions.getAllRooms);
 router.get('/room/:roomId', actions.getSingleRoom);
 
-router.post('/admin/create-room', actions.adminCreateRooms);
+router.post('/admin/create-room', middlewares.verifyToken, actions.adminCreateRooms);
 
-router.delete('/delete-room/:roomId', actions.adminDeleteRooms);
+router.delete('/admin/delete-room/:roomId', middlewares.verifyToken, actions.adminDeleteRooms);
 
 module.exports = router;

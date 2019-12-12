@@ -1,6 +1,5 @@
 const connection = require('../../DB/database');
 
-// get all users
 getAllUsersQuery = () => {
     const query = "SELECT * FROM users";
     return new Promise((resolve, reject) => {
@@ -14,8 +13,7 @@ getAllUsersQuery = () => {
     });
 };
 
-// registering user
-function signUpQuery(firstname, lastname, username, email, companyName, userType, pass) {
+signUpQuery = (firstname, lastname, username, email, companyName, userType, pass) => {
     const query = 'INSERT INTO users(Name, Lastname, Username, Password, Email, Company_name, Date_registered, User_type) VALUES(?,?,?,?,?,?,NOW(),?)';
     return new Promise((res, rej) => {
         connection.query(query, [firstname, lastname, username, pass, email, companyName, userType],(error, results, fields) => {
@@ -28,7 +26,6 @@ function signUpQuery(firstname, lastname, username, email, companyName, userType
     });
 };
 
-// login user
 logInUserQuery = (username) => {
     const query = 'SELECT * FROM users WHERE Username = ?';
     return new Promise((res, rej) => {
@@ -42,7 +39,6 @@ logInUserQuery = (username) => {
     });
 };
 
-// editing user profiles
 editMyProfileQuery = (name, lastname, username, email, companyName, userId) => {
     // console.log(user);
     const query = "UPDATE users SET Name = ?, Lastname = ?, Username = ?, Email = ?, Company_name = ? WHERE Id = ?";
@@ -57,7 +53,6 @@ editMyProfileQuery = (name, lastname, username, email, companyName, userId) => {
     });
 };
 
-// geting user and user's events
 getUserInfoAndEventsQuery = (userId) => {
     const query = "SELECT Name, Lastname, Email, Title, Short_info FROM users LEFT JOIN events ON events.User_id = users.Id WHERE users.Id = ?";
     return new Promise((res, rej) => {
@@ -71,8 +66,6 @@ getUserInfoAndEventsQuery = (userId) => {
     });
 };
 
-// ADMIN
-// only admin can get specific user profile
 adminDeleteUserProfileQuery = (userId) => {
     const query = "DELETE FROM users WHERE Id = ?";
     return new Promise((res, rej) => {
@@ -86,7 +79,6 @@ adminDeleteUserProfileQuery = (userId) => {
     });
 };
 
-// only admin can get one user
 adminGetOneUserQuery = (userId) => {
     const query = "SELECT * FROM users WHERE Id = ?";
     return new Promise((res,rej) => {

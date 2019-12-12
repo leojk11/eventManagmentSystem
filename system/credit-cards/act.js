@@ -1,4 +1,3 @@
-const helper = require('../helper/helper');
 const queries = require('./query');
 const userQueries = require('../users/query');
 const ticketQueries = require('../tickets/query');
@@ -97,13 +96,13 @@ insertMoney = async(req, res) => {
 buyTicket = async(req, res) => {
     const userId = req.params.userId;
     const ticketId = req.params.ticketId;
-    const userCreditCard = req.body.Credit_card;
+    const userCreditCard = req.body.Card_number;
     const ticketAmount = req.body.Amount;
 
     const getUserMoneyBalance = await queries.getMoneyBalance(userId);
     const finalMoneyBalance = getUserMoneyBalance[0].Money;
     
-    const getOneTicket = await ticketQueries.adminGetOnlyOneTicketQuery(ticketId); 
+    const getOneTicket = await ticketQueries.getOnlyOneTicketQuery(ticketId); 
     const ticketPrice = getOneTicket[0].Price;
     const availableTicketAmount = getOneTicket[0].Available_amount;
 
@@ -114,7 +113,7 @@ buyTicket = async(req, res) => {
     
     
 
-    const tickets = await ticketQueries.adminGetAllTicketsQuery();
+    const tickets = await ticketQueries.getAllTicketsQuery();
     const ticketExist = tickets.some(ticket => {
         return ticketId == ticket.Id
     });
@@ -223,7 +222,9 @@ getOneCard = async(req, res) => {
     } else {
         try {
             const card = await queries.getOneCardQuery(userId);
-            res.status(200).send(card);
+            res.status(200).json({
+                card
+            });
         } catch (error) {
             res.status(500).send(error);
         }

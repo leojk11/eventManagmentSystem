@@ -4,11 +4,11 @@ const middlewares = require('../../middlewares/middlewares');
 
 const router = express.Router();
 
-router.post('/users/:userId/create-ticket/:eventId', actions.createTicket);
+router.post('/users/:userId/create-ticket/:eventId', middlewares.verifyToken, actions.createTicket);
 
 router.get('/available-tickets', middlewares.verifyToken, actions.getAllAvailableTickets);
-router.get('/my-tickets/:userId', actions.getMyTickets);
-router.get('/admin/get-tickets', actions.adminGetAllTickets);
-router.get('/admin/get-ticket/:eventId', actions.adminGetOnlyOneTicket);
+router.get('/my-tickets/:userId', middlewares.verifyToken, actions.getMyTickets);
+router.get('/tickets', actions.getAllTickets);
+router.get('/tickets/:eventId', actions.getOnlyOneTicket);
 
 module.exports = router;

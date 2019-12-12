@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get('/events', actions.getAllEvents);
 router.get('/events-details', middlewares.verifyToken, actions.getAllEventsAndDetails);
-router.get('/events-details/:eventId', actions.getSingleEventAndDetails);
+router.get('/events-details/:eventId', middlewares.verifyToken, actions.getSingleEventAndDetails);
 router.get('/events/:eventId', actions.getEventById);
 router.get('/event-ticket/:eventId', actions.getEventAndTickets);
 

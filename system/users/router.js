@@ -2,22 +2,19 @@ const express = require('express');
 const actions = require('./act');
 const middlewares = require('../../middlewares/middlewares');
 
+const router = express.Router();
 
-const {verifyToken} = middlewares;
-
-const routes = express.Router();
-
-routes.post('/register', signUp);
-routes.post('/login', logIn);
+router.post('/register', actions.signUp);
+router.post('/login', actions.logIn);
 // routes.post('/owner/register-admin', actions. )
 
-routes.put('/my-profile/:userId/edit', verifyToken, actions.editMyProfile);
+router.put('/my-profile/:userId/edit', middlewares.verifyToken, actions.editMyProfile);
 
-routes.get('/admin/users', verifyToken, actions.getAllUsers);
-routes.get('/my-profile/:userId', actions.getMyProfile);
-routes.get('/admin/users/:userId', verifyToken, actions.adminGetOneUser);
-routes.get('/user-and-events/:userId', actions.getUserInfoAndEvent);
+router.get('/admin/users', middlewares.verifyToken, actions.getAllUsers);
+router.get('/my-profile/:userId', middlewares.verifyToken, actions.getMyProfile);
+router.get('/admin/users/:userId', middlewares.verifyToken, actions.adminGetOneUser);
+router.get('/user-and-events/:userId', middlewares.verifyToken, actions.getUserInfoAndEvent);
 
-routes.delete('/admin/:adminId/delete-user/:userId', verifyToken, adminDeleteUserProfile)
+router.delete('/admin/:adminId/delete-user/:userId', middlewares.verifyToken, actions.adminDeleteUserProfile);
 
-module.exports = routes;
+module.exports = router;
