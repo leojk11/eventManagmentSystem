@@ -1,6 +1,7 @@
 const queries = require('./query');
 const userQueries = require('../users/query');
 const roomsQueires = require('../event-rooms/query');
+const ticketQueries = require('../tickets/query');
 
 
 // CREATE EVENT
@@ -18,12 +19,10 @@ createEvent = async(req, res) => {
 
     if(userExists == false) {
         res.status(400).json({
-            success: false,
             message: `User with ID if ${userId}, has not been found`
         })
     } else if(title == "" || shortInfo == "" || host == "") {
         res.status(400).json({
-            success: false,
             message: 'Please enter event title, short info about your event and who is the host.'
         })
     } 
@@ -62,17 +61,14 @@ addDetails = async(req, res) => {
 
     if(eventExists == false) {
         res.status(400).json({
-            success: false,
             message: `Event with ID of ${eventId}, has not been found.`
         })
     } else if(roomExists == false) {
         res.status(400).json({
-            success: false,
             message: `Room with the number of ${eventRoom}, does not exist.`
         })
     } else if(startTime == "" || endTime == "" || date == "" || ticketPrice == "" || eventRoom == "") {
         res.status(400).json({
-            success: false,
             message: 'You must enter start time, end time, date, ticket price and event room number.'
         })
     } 
@@ -135,16 +131,14 @@ updateDetails = async(req, res) => {
         return event
     });
     const finalResults = eventToUpd[0];
-    console.log(finalResults.Ticket_price);
+    // console.log(finalResults.Ticket_price);
 
     if(eventExists == false) {
         res.status(400).json({
-            success: false,
             message: `Event with ID of ${eventId}, has not been found.`
         })
     } else if(roomExists == false) {
         res.status(400).json({
-            success: false,
             message: `Room with number of ${eventRoom}, does not exist.`
         })
     } 
@@ -183,27 +177,24 @@ getAllEventsAndDetails = async(req, res) => {
                 title: events.Title,
                 short_info: events.Short_info,
                 host: events.Host,
-                user_id: events.User_id
+                user_id: events.User_id,
+                details: {
+                    start_time: events.Start_time,
+                    end_time: events.End_time,
+                    date: events.Date,
+                    available_tickets: events.Available_tickets,
+                    event_room: events.Event_room,
+                    event_id: events.Event_id
+                }
             }
             return eventObj
         })
-        const eventDetails = eventsAndDetails.map(event => {
-            const detailsObj = {
-                start_time: event.Start_time,
-                end_time: event.End_time,
-                date: event.Date,
-                available_tickets: event.Available_tickets,
-                event_room: event.Event_room,
-                event_id: event.Event_id
-            }
-            return detailsObj
-        })
         res.status(200).json({
-            events,
-            eventDetails
+            events
         })
     } catch (error) {
         res.status(500).send(error);
+        // console.log(error);
     }
 };
 getEventById = async(req, res) => {
@@ -212,11 +203,10 @@ getEventById = async(req, res) => {
     const events = await queries.getAllEventsQuery();
     const eventExists = events.some(event => {
         return eventId == event.Id
-    })
+    });
 
     if(eventExists == false) {
         res.status(400).json({
-            success: false,
             message: `Event with ID of ${eventId}, has not been found`
         })
     } else {
@@ -245,11 +235,30 @@ getSingleEventAndDetails = async(req, res) => {
     } else {
         try {
             const eventAndDetails = await queries.getSingleEventAndDetailsQuery(eventId);
+            const event = eventAndDetails.map(events => {
+                const eventObj = {
+                    id: events.Id,
+                    title: events.Title,
+                    short_info: events.Short_info,
+                    host: events.Host,
+                    user_id: events.User_id,
+                    details: {
+                        start_time: events.Start_time,
+                        end_time: events.End_time,
+                        date: events.Date,
+                        available_tickets: events.Available_tickets,
+                        event_room: events.Event_room
+                        // event_id: events.Event_id
+                    }
+                }
+                return eventObj
+            })
             res.status(200).json({
-                eventAndDetails
+                event
             })
         } catch (error) {
             res.status(500).send(error);
+            console.log(error);
         }
     }
 };
@@ -261,11 +270,19 @@ getEventAndTickets = async(req, res) => {
         return eventId == event.Id
     });
 
+    const tickets = await ticketQueries.adminGetAllTicketsQuery();
+    const ticketExists = tickets.some(ticket => {
+        return eventId == ticket.Event_id
+    })
+
     if(eventExists == false) {
         res.status(400).json({
-            success: false,
             message: `Event with ID of ${eventId}, has not bee found.`
         });
+    } else if(ticketExists == false){
+        res.status(400).json({
+            message: `Event with ID of ${eventId}, does not have ticket info.`
+        })
     } else {
         try {
             const eventAndTickets = await queries.getEventAndTickets(eventId);
@@ -300,7 +317,6 @@ adminDeleteEvent = async(req, res) => {
     }
     else if(eventExist == false) {
         res.status(400).json({
-            success: false,
             message: `Event with ID of ${eventId}, has not been found.`
         })
     } else {

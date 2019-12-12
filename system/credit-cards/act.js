@@ -20,23 +20,19 @@ addCard = async(req,res) => {
 
     if(cardType == "" || exMounth == "" || exYear == "" || cardNumber == "" || cardOwnerName == ""){
         res.status(400).json({
-            success: false,
             message: 'Please enter card type, expiring mounth, expiring year, card number and card owner name.'
         })
     } else if(exMounth.length < 1 || exMounth > 12){
         res.status(400).json({
-            success: false,
             message: `Ex. mounth ${exMounth} is not valid. Please enter another one.`
         })
     } else if(exYear.length < 4 || exYear < 2019) {
         res.status(400).json({
-            success: false,
             message: `Ex. year ${exYear} is not valid. Please enter another one.`
         })
     }
     else if(cardNumber.toString().length < 16){
         res.status(400).json({
-            success: false,
             message: 'Your card number must be at least 16 characters long.'
         })
     } 
@@ -74,18 +70,15 @@ insertMoney = async(req, res) => {
 
     if(cardNumber == "" || amount == ""){
         res.statusn(400).json({
-            success: false,
             message: 'Please enter card number and how much money you want to add.'
         })
     }
     else if(cardNumber.length < 16){
         res.status(400).json({
-            success: false,
             message: `Card number ${cardNumber}, is not valid.`
         })
     } else if(cardNumbersExist == false) {
         res.status(400).json({
-            success: false,
             message: `Card number ${cardNumber}, does not exist.`
         })
     } else {
@@ -138,32 +131,26 @@ buyTicket = async(req, res) => {
 
     if(userCreditCard == "" || ticketAmount == "") {
         res.status(400).json({
-            success: false,
             message: 'Please enter user credit card and ticket amount.'
         })
     } else if(ticketExist == false) {
         res.status(500).json({
-            success: false,
             message: `Ticket with ID of ${ticketId}, does not exist.`
         })
     } else if(userExist == false) {
         res.status(500).json({
-            success: false,
             message: `User with ID of ${userId}, does not exist.`
         })
     } else if(cardNumberExist == false) {
         res.status(400).json({
-            success: false,
             message: `Card with number of ${userCreditCard}, does not exist.`
         })
     } else if(availableTicketAmount < 0) {
         res.status(400).json({
-            success: false,
             message: 'No tickets are available.'
         })
     } else if(totalTicketPrice > finalMoneyBalance) {
         res.status(400).json({
-            success: false,
             message: 'You don\'t have enough money to purchase that.'
         })
     }
@@ -196,7 +183,6 @@ deleteCard = async(req, res) => {
 
     if(cardIdsExist == false) {
         res.status(200).json({
-            success: false,
             message: `Card with ID ${cardId}, has not been found.`
         })
     } else {
@@ -232,7 +218,6 @@ getOneCard = async(req, res) => {
 
     if(userExist == false) {
         res.status(400).json({
-            success: false,
             message: `User with the ID of ${userId}, has not been found.`
         })
     } else {
