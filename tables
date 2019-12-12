@@ -1,13 +1,76 @@
 // USERS TABLE 
 CREATE TABLE IF NOT EXISTS users (
 	Id INT NOT NULL AUTO_INCREMENT,
-    Name VARCHAR(30) NOT NULL,
-    Lastname VARCHAR(30) NOT NULL,
-    Username VARChAR(30) NOT NULL,
-    Password VARCHAR(250) NOT NULL,
-    Email VARCHAR(50) NOT NULL,
-    Company_name VARCHAR(100) NULL,
+    Name VARCHAR(50) NOT NULL,
+    Lastname VARCHAR(50) NOT NULL,
+    Username VARCHAR(10) NOT NULL,
+    Password VARCHAR(200) NOT NULL,
+    Email VARCHAR(40) NOT NULL,
+    User_type VARCHAR(20) NOT NULL,
+    Company_name VARCHAR(50) NULL,
     Date_registered DATETIME,
+    PRIMARY KEY(Id)
+);
+
+// TICKETS TABLE
+CREATE TABLE IF NOT EXISTS tickets (
+	Id INT NOT NULL AUTO_INCREMENT,
+    Price VARCHAR(10) NOT NULL,
+    Available_amount VARCHAR(50) NOT NULL,
+    Event_info VARCHAR(200) NOT NULL,
+    User_id INT NOT NULL,
+    Event_id INT NOT NULL,
+    FOREIGN KEY(User_id) REFERENCES users(Id),
+    FOREIGN KEY(Event_id) REFERENCES events(Id),
+    PRIMARY KEY(Id)
+);
+
+// EVENTS TABLE
+CREATE TABLE IF NOT EXISTS events ( 
+	Id INT NOT NULL AUTO_INCREMENT,
+    Title VARCHAR(50) NOT NULL,
+    Short_info VARCHAR(100) NOT NULL,
+    Host VARCHAR(50) NOT NULL,
+    User_id INT NOT NULL,
+    FOREIGN KEY(User_id) REFERENCES users(Id),
+    PRIMARY KEY(Id)
+);
+
+// EVENTS DETAILS TABLE
+CREATE TABLE IF NOT EXISTS event_details (
+	Id INT NOT NULL AUTO_INCREMENT,
+    Start_time TIME NOT NULL,
+    End_time TIME NOT NULL,
+    Date DATE NOT NULL,
+    Ticket_price VARCHAR(10) NOT NULL,
+    Available_ticket BOOLEAN NOT NULL,
+    Event_room INT NOT NULL,
+    Event_id INT NOT NULL,
+    FOREIGN KEY (Event_id) REFERENCES events(Id),
+    FOREIGN KEY (Event_room) REFERENCES event_rooms(Id),
+    PRIMARY KEY(Id)
+);
+
+// PAYMENT DETAILS TABLE
+CREATE TABLE IF NOT EXISTS payment_details (
+	Id INT NOT NULL AUTO_INCREMENT,
+    Card_type VARCHAR(20) NOT NULL,
+    Ex_mounth INT NOT NULL,
+    Ex_year INT NOT NULL,
+    Card_number VARCHAR(20) NOT NULL,
+    Card_owner_name VARCHAR(30) NOT NULL,
+    Money INT NOT NULL,
+    User_id INT NOT NULL,
+    FOREIGN KEY(User_id) REFERENCES users(Id),
+    PRIMARY KEY(Id)
+);
+
+// EVENT ROOMS TABLE
+CREATE TABLE IF NOT EXISTS event_rooms (
+	Id INT NOT NULL AUTO_INCREMENT,
+    Room_name VARCHAR(100) NOT NULL,
+    Equipement_available VARCHAR(300) NOT NULL,
+    Room_capacity INT NOT NULL,
     PRIMARY KEY(Id)
 );
 
