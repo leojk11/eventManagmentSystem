@@ -47,7 +47,7 @@ adminDeleteRooms = async(req, res) => {
 
 getAllRooms = async(req, res) => {
     try {
-        const rooms = await queries.adminGetAllRoomsQuery();
+        const rooms = await queries.getAllRoomsQuery();
         res.status(200).json({
             rooms
         })

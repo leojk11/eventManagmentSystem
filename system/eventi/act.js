@@ -182,13 +182,14 @@ getAllEventsAndDetails = async(req, res) => {
                     start_time: events.Start_time,
                     end_time: events.End_time,
                     date: events.Date,
-                    available_tickets: events.Available_tickets,
+                    available_tickets: events.Available_ticket,
                     event_room: events.Event_room,
                     event_id: events.Event_id
                 }
             }
             return eventObj
         })
+        console.log(events.Available_ticket);
         res.status(200).json({
             events
         })
