@@ -9,7 +9,7 @@ addCard = async(req,res) => {
     const cardNumber = req.body.Card_number;
     const cardOwnerName = req.body.Card_owner;
     const moneyAmount = 0;
-    const userId = req.params.id;
+    const userId = req.params.userId;
 
     const cardNumbers = await queries.getOnlyCardNumber();
     const cardNumbersExist = cardNumbers.some(card => {
@@ -17,7 +17,7 @@ addCard = async(req,res) => {
     })
     // console.log(cardNumbersExist);
 
-    if(cardType == "" || exMounth == "" || exYear == "" || cardNumber == "" || cardOwnerName == ""){
+    if(cardType == null || exMounth == null || exYear == null || cardNumber == null || cardOwnerName == null){
         res.status(400).json({
             message: 'Please enter card type, expiring mounth, expiring year, card number and card owner name.'
         })
@@ -111,8 +111,6 @@ buyTicket = async(req, res) => {
     const totalTicketPrice = ticketPrice * ticketAmount;
     const boughtTicket = finalMoneyBalance - totalTicketPrice;
     
-    
-
     const tickets = await ticketQueries.getAllTicketsQuery();
     const ticketExist = tickets.some(ticket => {
         return ticketId == ticket.Id

@@ -5,6 +5,7 @@ const eventQueries = require('../eventi/query');
 
 createTicket = async(req, res) => {
     const price = req.body.Price;
+    const finalPrice = price + "" + "$";
     const availableAm = req.body.Available_amount;
     const eventInfo = req.body.Event_info;
     const eventId = req.params.eventId;
@@ -38,7 +39,7 @@ createTicket = async(req, res) => {
             message: `User with ID of ${userId}, already have created ticket. One user can only have one ticket.`
         })
     } 
-    else if(price == "" || availableAm == "" || eventInfo == "") {
+    else if(eventInfo == "") {
         res.status(400).json({
             message: 'Please enter ticket price, available amount and some event info.'
         })
@@ -46,7 +47,7 @@ createTicket = async(req, res) => {
 
     else {
         try {
-            await queries.createTicketQuery(price, availableAm, eventInfo, eventId, userId);
+            await queries.createTicketQuery(finalPrice, availableAm, eventInfo, eventId, userId);
             res.status(200).json({
                 message: `Ticket for event ${eventId}, has been created.`
             })

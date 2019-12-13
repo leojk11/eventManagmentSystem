@@ -4,9 +4,9 @@ const middlewares = require('../../middlewares/middlewares');
 
 const router = express.Router();
 
-router.post('/add-card/:id',  middlewares.verifyToken, actions.addCard);
+router.post('/insert-card/:userId',  middlewares.verifyToken, actions.addCard);
 
-router.patch('/add-money/:userId', middlewares.verifyToken, actions.insertMoney);
+router.patch('/insert-money/:userId', middlewares.verifyToken, actions.insertMoney);
 router.patch('/buy-ticket/:ticketId/:userId', middlewares.verifyToken, actions.buyTicket);
 
 router.delete('/delete-card/:cardId', middlewares.verifyToken, actions.deleteCard);

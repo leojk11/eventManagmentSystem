@@ -8,10 +8,10 @@ router.get('/events', actions.getAllEvents);
 router.get('/events-details', middlewares.verifyToken, actions.getAllEventsAndDetails);
 router.get('/events-details/:eventId', middlewares.verifyToken, actions.getSingleEventAndDetails);
 router.get('/events/:eventId', actions.getEventById);
-router.get('/event-ticket/:eventId', actions.getEventAndTickets);
+router.get('/events-tickets/:eventId', actions.getEventAndTickets);
 
 router.post('/create-event/:userId', middlewares.verifyToken, actions.createEvent);
-router.post('/:eventId/add-details', middlewares.verifyToken, actions.addDetails);
+router.post('/add-details/:eventId', middlewares.verifyToken, actions.addDetails);
 
 router.put('/update-event/:eventId', middlewares.verifyToken, actions.updateDetails);
 

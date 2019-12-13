@@ -100,6 +100,18 @@ getEventAndTickets = (eventId) => {
         });
     });
 };
+getAllDetailsQuery = () => {
+    const query = "SELECT * FROM event_details";
+    return new Promise((res, rej) => {
+        connection.query(query, (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
 
 
 adminDeleteEventQuery = (eventId) => {
@@ -137,6 +149,7 @@ module.exports = {
     getAllEventsAndDetailsQuery,
     getEventByIdQuery,
     getEventAndTickets,
+    getAllDetailsQuery,
     getSingleEventAndDetailsQuery,
     updateEventDetailsQuery
-}
+};

@@ -106,8 +106,8 @@ getMoneyBalance = (userId) => {
 };
 
 insertMoneyQuery = (moneyAmount, userId) => {
-    console.log(moneyAmount);
-    console.log(userId);
+    // console.log(moneyAmount);
+    // console.log(userId);
     const query = "UPDATE payment_details SET Money = ? WHERE User_id = ?";
     return new Promise((res, rej) => {
         connection.query(query, [moneyAmount, userId], (error, results, fields) => {
@@ -121,8 +121,8 @@ insertMoneyQuery = (moneyAmount, userId) => {
 };
 
 buyTicketQuery = (leftTicketAmount, eventId) => {
-    console.log(leftTicketAmount);
-    console.log(eventId);
+    // console.log(leftTicketAmount);
+    // console.log(eventId);
     const query = "UPDATE tickets SET Available_amount = ? WHERE Event_id = ?";
     return new Promise((res, rej) => {
         connection.query(query, [leftTicketAmount, eventId], (error, results, fields) => {

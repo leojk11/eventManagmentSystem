@@ -59,7 +59,16 @@ addDetails = async(req, res) => {
         return eventRoom == room.Id
     })
 
-    if(eventExists == false) {
+    const eventDetails = await queries.getAllDetailsQuery();
+    const eventDetailsExist = eventDetails.some(details => {
+        return eventId == details.Event_id
+    });
+
+    if(eventDetailsExist == true) {
+        res.status(400).json({
+            message: `Details for event with ID of ${eventId}, already exist.`
+        })
+    } else if(eventExists == false) {
         res.status(400).json({
             message: `Event with ID of ${eventId}, has not been found.`
         })
@@ -99,31 +108,32 @@ updateDetails = async(req, res) => {
         return eventId == event.Event_id
     });
 
-    const rooms = await roomsQueires.getAllRoomsQuery();
-    const roomExists = rooms.some(room => {
-        return eventRoom == room.Id
-    })
-
     const eventToUpd = events.filter(event => {
-        if(startTime == ""){
+        if(startTime == null){
             startTime == event.Start_time
         } else {
             event.Start_time = startTime
         }
 
-        if(endTime == ""){
+        if(endTime == null){
             endTime == event.End_time
         } else {
             event.End_time = endTime
         }
 
-        if(ticketPrice == ""){
+        if(date == null){
+            date == event.Date
+        } else {
+            event.Date == date
+        }
+
+        if(ticketPrice == null){
             ticketPrice == event.Ticket_price
         } else {
             event.Ticket_price = ticketPrice
         }
 
-        if(eventRoom == ""){
+        if(eventRoom == null){
             eventRoom == event.Event_room
         } else {
             event.Event_room = eventRoom
@@ -137,21 +147,21 @@ updateDetails = async(req, res) => {
         res.status(400).json({
             message: `Event with ID of ${eventId}, has not been found.`
         })
-    } else if(roomExists == false) {
+    } else if(availableTickets == null){
         res.status(400).json({
-            message: `Room with number of ${eventRoom}, does not exist.`
+            message: 'Available tickets must be true or false.'
         })
     } 
     else {
         try {
-            await queries.updateEventDetailsQuery(finalResults.Start_time, finalResults.End_time, date, finalResults.Ticket_price, availableTickets, finalResults.Event_room, eventId);
+            await queries.updateEventDetailsQuery(finalResults.Start_time, finalResults.End_time, finalResults.Date, finalResults.Ticket_price, availableTickets, finalResults.Event_room, eventId);
 
             res.status(200).json({
                 message: `Event with the ID of ${eventId}, has been updated!`
             });
         } catch (error) {
             res.status(500).send(error);
-            // console.log(error);
+            console.log(error);
         }
     }
     
@@ -173,7 +183,7 @@ getAllEventsAndDetails = async(req, res) => {
         const eventsAndDetails = await queries.getAllEventsAndDetailsQuery();
         const events = eventsAndDetails.map(events => {
             const eventObj = {
-                id: events.Id,
+                event_id: events.Event_id,
                 title: events.Title,
                 short_info: events.Short_info,
                 host: events.Host,
@@ -182,9 +192,10 @@ getAllEventsAndDetails = async(req, res) => {
                     start_time: events.Start_time,
                     end_time: events.End_time,
                     date: events.Date,
-                    available_tickets: events.Available_tickets,
-                    event_room: events.Event_room,
-                    event_id: events.Event_id
+                    available_tickets: events.Available_ticket,
+                    note: 'If available tickets is 1 it means we have tickets available, if it is 0 it means we have ran out of tickets.',
+                    tikcet_price: events.Ticket_price + "$",
+                    event_room: events.Event_room
                 }
             }
             return eventObj
@@ -194,7 +205,7 @@ getAllEventsAndDetails = async(req, res) => {
         })
     } catch (error) {
         res.status(500).send(error);
-        // console.log(error);
+        console.log(error);
     }
 };
 getEventById = async(req, res) => {
@@ -237,7 +248,7 @@ getSingleEventAndDetails = async(req, res) => {
             const eventAndDetails = await queries.getSingleEventAndDetailsQuery(eventId);
             const event = eventAndDetails.map(events => {
                 const eventObj = {
-                    id: events.Id,
+                    event_id: events.Event_id,
                     title: events.Title,
                     short_info: events.Short_info,
                     host: events.Host,
@@ -246,7 +257,9 @@ getSingleEventAndDetails = async(req, res) => {
                         start_time: events.Start_time,
                         end_time: events.End_time,
                         date: events.Date,
-                        available_tickets: events.Available_tickets,
+                        available_tickets: events.Available_ticket,
+                        note: 'If available tickets is 1 it means we have tickets available, if it is 0 it means we have ran out of tickets.',
+                        ticket_price: events.Ticket_price + "$",
                         event_room: events.Event_room
                         // event_id: events.Event_id
                     }
@@ -270,14 +283,14 @@ getEventAndTickets = async(req, res) => {
         return eventId == event.Id
     });
 
-    const tickets = await ticketQueries.adminGetAllTicketsQuery();
+    const tickets = await ticketQueries.getAllTicketsQuery();
     const ticketExists = tickets.some(ticket => {
         return eventId == ticket.Event_id
     })
 
     if(eventExists == false) {
         res.status(400).json({
-            message: `Event with ID of ${eventId}, has not bee found.`
+            message: `Event with ID of ${eventId}, has not been found.`
         });
     } else if(ticketExists == false){
         res.status(400).json({
@@ -286,8 +299,21 @@ getEventAndTickets = async(req, res) => {
     } else {
         try {
             const eventAndTickets = await queries.getEventAndTickets(eventId);
+            const event = eventAndTickets.map(events => {
+                const eventObj = {
+                    event_id: events.Event_id,
+                    title: events.Title,
+                    event_info: events.Event_info,
+                    host: events.Host,
+                    tickets: {
+                        price: events.Price,
+                        available_amount: events.Available_amount
+                    }
+                }
+                return eventObj;
+            })
             res.status(200).json({
-                eventAndTickets
+                event
             })
         } catch (error) {
             res.status(400).send(error);

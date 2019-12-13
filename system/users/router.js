@@ -10,9 +10,9 @@ router.post('/login', actions.logIn);
 
 router.put('/my-profile/:userId/edit', middlewares.verifyToken, actions.editMyProfile);
 
-router.get('/admin/users', middlewares.verifyToken, actions.getAllUsers);
+router.get('/admin/:userId/users', middlewares.verifyToken, actions.getAllUsers);
 router.get('/my-profile/:userId', middlewares.verifyToken, actions.getMyProfile);
-router.get('/admin/users/:userId', middlewares.verifyToken, actions.adminGetOneUser);
+router.get('/admin/:adminId/users/:userId', middlewares.verifyToken, actions.adminGetOneUser);
 router.get('/user-and-events/:userId', middlewares.verifyToken, actions.getUserInfoAndEvent);
 
 router.delete('/admin/:adminId/delete-user/:userId', middlewares.verifyToken, actions.adminDeleteUserProfile);
