@@ -193,9 +193,11 @@ getAllEventsAndDetails = async(req, res) => {
                     end_time: events.End_time,
                     date: events.Date,
                     available_tickets: events.Available_ticket,
-                    note: 'If available tickets is 1 it means we have tickets available, if it is 0 it means we have ran out of tickets.',
                     tikcet_price: events.Ticket_price + "$",
-                    event_room: events.Event_room
+                    event_room: events.Event_room,
+                    event_room: events.Event_room,
+                    event_id: events.Event_id
+
                 }
             }
             return eventObj
@@ -258,10 +260,8 @@ getSingleEventAndDetails = async(req, res) => {
                         end_time: events.End_time,
                         date: events.Date,
                         available_tickets: events.Available_ticket,
-                        note: 'If available tickets is 1 it means we have tickets available, if it is 0 it means we have ran out of tickets.',
                         ticket_price: events.Ticket_price + "$",
                         event_room: events.Event_room
-                        // event_id: events.Event_id
                     }
                 }
                 return eventObj
