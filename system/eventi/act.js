@@ -183,13 +183,13 @@ getAllEventsAndDetails = async(req, res) => {
                     end_time: events.End_time,
                     date: events.Date,
                     available_tickets: events.Available_ticket,
+                    note: 'If available tickets is 1 it means we have tickets available, if it is 0 it means we have ran out of tickets.',
                     event_room: events.Event_room,
                     event_id: events.Event_id
                 }
             }
             return eventObj
         })
-        console.log(events.Available_ticket);
         res.status(200).json({
             events
         })
@@ -247,8 +247,9 @@ getSingleEventAndDetails = async(req, res) => {
                         start_time: events.Start_time,
                         end_time: events.End_time,
                         date: events.Date,
-                        available_tickets: events.Available_tickets,
-                        event_room: events.Event_room
+                        available_tickets: events.Available_ticket,
+                        event_room: events.Event_room,
+                        note: 'If available tickets is 1 it means we have tickets available, if it is 0 it means we have ran out of tickets.'
                         // event_id: events.Event_id
                     }
                 }
