@@ -3,7 +3,7 @@ const userQueries = require('../users/query');
 const eventQueries = require('../eventi/query');
 
 
-createTicket = async(req, res) => {
+createTicket = async(req, res, next) => {
     const price = req.body.Price;
     const availableAm = req.body.Available_amount;
     const eventInfo = req.body.Event_info;
@@ -26,24 +26,25 @@ createTicket = async(req, res) => {
     });
 
     if(userExists == false) {
-        res.status(400).json({
-            message: `User with ID of ${userId}, has not been found.`
-        })
-    } else if(eventExists == false) {
-        res.status(400).json({
-            message: `Event with ID of ${eventId}, has not been found.`
-        })
-    } else if(userHaveTicket == true) {
-        res.status(400).json({
-            message: `User with ID of ${userId}, already have created ticket. One user can only have one ticket.`
-        })
+        var error = new Error(`User with ID of ${userId}, has not been found.`);
+        error.status = 400;
+        next(error);
     } 
-    else if(eventInfo == "") {
-        res.status(400).json({
-            message: 'Please enter ticket price, available amount and some event info.'
-        })
+    else if(eventExists == false) {
+        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
+        error.status = 400;
+        next(error);
     } 
-
+    else if(userHaveTicket == true) {
+        var error = new Error(`User with ID of ${userId}, already have created ticket. One user can only have one ticket.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(eventInfo == null || availableAm == null || price == null) {
+        var error = new Error('Please enter ticket price, available amount and some event info.');
+        error.status = 400;
+        next(error);
+    } 
     else {
         try {
             await queries.createTicketQuery(price, availableAm, eventInfo, eventId, userId);
@@ -68,7 +69,7 @@ getAllAvailableTickets = async(req, res) => {
     }
 };
 
-getMyTickets = async(req, res) => {
+getMyTickets = async(req, res, next) => {
     const userId = req.params.userId;
 
     const users = await userQueries.getAllUsersQuery();
@@ -82,13 +83,13 @@ getMyTickets = async(req, res) => {
     })
 
     if(userExists == false){
-        res.status(400).json({
-            message: `User with ID of ${userId}, does not exist.`
-        })
+        var error = new Error(`User with ID of ${userId}, does not exist.`);
+        error.status = 400;
+        next(error);
     } else if(userTicketExists == false) {
-        res.status(400).json({
-            message: `User with ID of ${userId}, does not have any tickets.`
-        })
+        var error = new Error(`User with ID of ${userId}, does not have any tickets.`);
+        error.status = 400;
+        next(error);
     } 
     else {
         try {
@@ -130,7 +131,7 @@ getAllTickets = async(req, res) => {
     }
 };
 
-getOnlyOneTicket = async(req, res) => {
+getOnlyOneTicket = async(req, res, next) => {
     const eventId = req.params.eventId;
 
     const events = await eventQueries.getEventByIdQuery(eventId);
@@ -144,13 +145,14 @@ getOnlyOneTicket = async(req, res) => {
     });
 
     if(eventExists == false) {
-        res.status(400).json({
-            message: `Event with ID of ${eventId}, has not been found.`
-        });
-    } else if (eventTicketsExists == false){
-        res.status(400).json({
-            message: `Event with ID of ${eventId}, does not have any tickets.`
-        });
+        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if (eventTicketsExists == false){
+        var error = new Error(`Event with ID of ${eventId}, does not have any tickets.`);
+        error.status = 400;
+        next(error);
     } else {
         try {
             const ticket = await queries.getOnlyOneTicketQuery(eventId);

@@ -15,7 +15,7 @@ addCardQuery = (cardType, exMounth, exYear, cardNumber, cardOwnerName, moneyAmou
 };
 
 getOneCardQuery = (userId) => {
-    const query = "SELECT * FROM payment_details WHERE User_id = 1";
+    const query = "SELECT * FROM payment_details WHERE User_id = ?";
     return new Promise((res, rej) => {
         connection.query(query, [userId], (error, results, fields) => {
             if(error){

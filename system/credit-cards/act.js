@@ -2,7 +2,7 @@ const queries = require('./query');
 const userQueries = require('../users/query');
 const ticketQueries = require('../tickets/query');
 
-addCard = async(req,res) => {
+addCard = async(req, res, next) => {
     const cardType = req.body.Card_type;
     const exMounth = req.body.Ex_mounth;
     const exYear = req.body.Ex_year;
@@ -18,27 +18,27 @@ addCard = async(req,res) => {
     // console.log(cardNumbersExist);
 
     if(cardType == null || exMounth == null || exYear == null || cardNumber == null || cardOwnerName == null){
-        res.status(400).json({
-            message: 'Please enter card type, expiring mounth, expiring year, card number and card owner name.'
-        })
+        var error = new Error('You must enter card type, expiring mount, expiring year, card number and card owner name');
+        error.status = 400;
+        next(error);
     } else if(exMounth.length < 1 || exMounth > 12){
-        res.status(400).json({
-            message: `Ex. mounth ${exMounth} is not valid. Please enter another one.`
-        })
+        var error = new Error(`Ex. mount ${exMounth} is not valid. Please enter another one.`);
+        error.status = 400;
+        next(error);
     } else if(exYear.length < 4 || exYear < 2019) {
-        res.status(400).json({
-            message: `Ex. year ${exYear} is not valid. Please enter another one.`
-        })
+        var error = new Error(`Ex. year ${exYear} is not valid. Please enter another one.`);
+        error.status = 400;
+        next(error);
     }
     else if(cardNumber.toString().length < 16){
-        res.status(400).json({
-            message: 'Your card number must be at least 16 characters long.'
-        })
+        var error = new Error('Your card number must be at least 16 characters long.');
+        error.status = 400;
+        next(error);
     } 
     else if(cardNumbersExist == true){
-        res.status(400).json({
-            message: 'That card is already in use.'
-        })
+        var error = new Error('That card number is already in use.');
+        error.status = 400;
+        next(error);
     } 
      else {
         try {
@@ -52,7 +52,7 @@ addCard = async(req,res) => {
     }
 };
 
-insertMoney = async(req, res) => {
+insertMoney = async(req, res, next) => {
     const userId = req.params.userId;
     const cardNumber = req.body.Card_number;
     const amount = req.body.Amount;
@@ -67,19 +67,20 @@ insertMoney = async(req, res) => {
     // console.log(moneyAmount);
 
 
-    if(cardNumber == "" || amount == ""){
-        res.statusn(400).json({
-            message: 'Please enter card number and how much money you want to add.'
-        })
+    if(cardNumber == null || amount == null){
+        var error = new Error('Please enter card number and how much money you want to add.');
+        error.status = 400;
+        next(error);
     }
     else if(cardNumber.length < 16){
-        res.status(400).json({
-            message: `Card number ${cardNumber}, is not valid.`
-        })
-    } else if(cardNumbersExist == false) {
-        res.status(400).json({
-            message: `Card number ${cardNumber}, does not exist.`
-        })
+        var error = new Error(`Card number ${cardNumber}, is not valid.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(cardNumbersExist == false) {
+        var error = new Error(`Card number ${cardNumber}, does not exist.`);
+        error.status = 400;
+        next(error);
     } else {
         const addedCash = moneyAmount + amount;
         // console.log(addedCash);
@@ -93,7 +94,7 @@ insertMoney = async(req, res) => {
         }
     }
 };
-buyTicket = async(req, res) => {
+buyTicket = async(req, res, next) => {
     const userId = req.params.userId;
     const ticketId = req.params.ticketId;
     const userCreditCard = req.body.Card_number;
@@ -126,34 +127,38 @@ buyTicket = async(req, res) => {
         return userCreditCard == card.Card_number
     });
 
-    if(userCreditCard == "" || ticketAmount == "") {
-        res.status(400).json({
-            message: 'Please enter user credit card and ticket amount.'
-        })
-    } else if(ticketExist == false) {
-        res.status(500).json({
-            message: `Ticket with ID of ${ticketId}, does not exist.`
-        })
-    } else if(userExist == false) {
-        res.status(500).json({
-            message: `User with ID of ${userId}, does not exist.`
-        })
-    } else if(cardNumberExist == false) {
-        res.status(400).json({
-            message: `Card with number of ${userCreditCard}, does not exist.`
-        })
-    } else if(availableTicketAmount < 0) {
-        res.status(400).json({
-            message: 'No tickets are available.'
-        })
-    } else if(totalTicketPrice > finalMoneyBalance) {
-        res.status(400).json({
-            message: 'You don\'t have enough money to purchase that.'
-        })
+    if(userCreditCard == null || ticketAmount == null) {
+        var error = new Error('Please enter user credit card and ticket amount.');
+        error.status = 400;
+        next(error);
+    } 
+    else if(ticketExist == false) {
+        var error = new Error(`Ticket with ID of ${ticketId}, does not exist.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(userExist == false) {
+        var error = new Error(`User with ID of ${userId}, does not exist.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(cardNumberExist == false) {
+        var error = new Error(`Card with number of ${userCreditCard}, does not exist.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(availableTicketAmount < 0) {
+        var error = new Error('No tickets are available.');
+        error.status = 400;
+        next(error);
+    } 
+    else if(totalTicketPrice > finalMoneyBalance) {
+        var error = new Error('You don\'t have enough money to purchase that.');
+        error.status = 400;
+        next(error);
     }
     else {
         try {
-
             const updateMoney = await queries.insertMoneyQuery(boughtTicket, userId);
             const updateTicketAmount = await queries.buyTicketQuery(finalTicketAmount, ticketId);
             const finalCall = [updateMoney, updateTicketAmount];
@@ -170,7 +175,7 @@ buyTicket = async(req, res) => {
     }
 };
 
-deleteCard = async(req, res) => {
+deleteCard = async(req, res, next) => {
     const cardId = req.params.cardId;
 
     const cardIds = await queries.getOnlyCardId();
@@ -179,9 +184,9 @@ deleteCard = async(req, res) => {
     })
 
     if(cardIdsExist == false) {
-        res.status(200).json({
-            message: `Card with ID ${cardId}, has not been found.`
-        })
+        var error = new Error(`Card with ID ${cardId}, has not been found.`);
+        error.status = 400;
+        next(error);
     } else {
         try {
             await deleteCardQuery(cardId);
@@ -205,7 +210,7 @@ adminGelAllCards = async(req, res) => {
         res.status(500).send(error);
     }
 };
-getOneCard = async(req, res) => {
+getOneCard = async(req, res, next) => {
     const userId = req.params.userId;
 
     const users = await userQueries.getAllUsersQuery();
@@ -213,11 +218,21 @@ getOneCard = async(req, res) => {
         return userId == user.Id
     });
 
+    const cards = await queries.adminGetAllCardsQuery();
+    const cardExist = cards.some(card => {
+        return userId == card.User_id
+    });
+    
     if(userExist == false) {
-        res.status(400).json({
-            message: `User with the ID of ${userId}, has not been found.`
-        })
-    } else {
+        var error = new Error(`User with the ID of ${userId}, has not been found.`);
+        error.status = 400;
+        next(error);
+    } else if(cardExist == false){
+        var error = new Error(`User with ID if ${userId}, does not have registered card.`);
+        error.status = 400;
+        next(error);
+    } 
+    else {
         try {
             const card = await queries.getOneCardQuery(userId);
             res.status(200).json({

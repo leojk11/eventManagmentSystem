@@ -5,10 +5,10 @@ const middlewares = require('../../middlewares/middlewares');
 const router = express.Router();
 
 router.get('/rooms', actions.getAllRooms);
-router.get('/room/:roomId', actions.getSingleRoom);
+router.get('/rooms/:roomId', actions.getSingleRoom);
 
-router.post('/admin/create-room', middlewares.verifyToken, actions.adminCreateRooms);
+router.post('/admin/:adminId/create-room', middlewares.verifyToken, actions.adminCreateRooms);
 
-router.delete('/admin/delete-room/:roomId', middlewares.verifyToken, actions.adminDeleteRooms);
+router.delete('/admin/:adminId/delete-room/:roomId', middlewares.verifyToken, actions.adminDeleteRooms);
 
 module.exports = router;

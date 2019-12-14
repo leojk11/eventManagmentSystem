@@ -5,7 +5,7 @@ const ticketQueries = require('../tickets/query');
 
 
 // CREATE EVENT
-createEvent = async(req, res) => {
+createEvent = async(req, res, next) => {
     const title = req.body.Title;
     const shortInfo = req.body.Short_info;
     const host = req.body.Host;
@@ -18,13 +18,13 @@ createEvent = async(req, res) => {
     });
 
     if(userExists == false) {
-        res.status(400).json({
-            message: `User with ID if ${userId}, has not been found`
-        })
-    } else if(title == "" || shortInfo == "" || host == "") {
-        res.status(400).json({
-            message: 'Please enter event title, short info about your event and who is the host.'
-        })
+        var error = new Error(`User with ID if ${userId}, has not been found`);
+        error.status = 400;
+        next(error);
+    } else if(title == null || shortInfo == null || host == null) {
+        var error = new Error('Please enter event title, short info about your event and who is the host.');
+        error.status = 400;
+        next(error);
     } 
     else {
         try {
@@ -40,7 +40,7 @@ createEvent = async(req, res) => {
 };
 
 // ADD DETAILS
-addDetails = async(req, res) => {
+addDetails = async(req, res, next) => {
     const eventId = req.params.eventId;
     const startTime = req.body.Start_time;
     const endTime = req.body.End_time;
@@ -65,21 +65,24 @@ addDetails = async(req, res) => {
     });
 
     if(eventDetailsExist == true) {
-        res.status(400).json({
-            message: `Details for event with ID of ${eventId}, already exist.`
-        })
-    } else if(eventExists == false) {
-        res.status(400).json({
-            message: `Event with ID of ${eventId}, has not been found.`
-        })
-    } else if(roomExists == false) {
-        res.status(400).json({
-            message: `Room with the number of ${eventRoom}, does not exist.`
-        })
-    } else if(startTime == "" || endTime == "" || date == "" || ticketPrice == "" || eventRoom == "") {
-        res.status(400).json({
-            message: 'You must enter start time, end time, date, ticket price and event room number.'
-        })
+        var error = new Error(`Details for event with ID of ${eventId}, already exist.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(eventExists == false) {
+        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(roomExists == false) {
+        var error = new Error(`Room with the number of ${eventRoom}, does not exist.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(startTime == null || endTime == null || date == null || ticketPrice == null || eventRoom == null) {
+        var error = new Error('You must enter start time, end time, date, ticket price and event room number.');
+        error.status = 400;
+        next(error);
     } 
     else {
         try {
@@ -93,7 +96,7 @@ addDetails = async(req, res) => {
     }
 };
 // UPDATE DETAILS
-updateDetails = async(req, res) => {
+updateDetails = async(req, res, next) => {
     const eventId = req.params.eventId;
 
     const startTime = req.body.Start_time;
@@ -144,13 +147,14 @@ updateDetails = async(req, res) => {
     // console.log(finalResults.Ticket_price);
 
     if(eventExists == false) {
-        res.status(400).json({
-            message: `Event with ID of ${eventId}, has not been found.`
-        })
-    } else if(availableTickets == null){
-        res.status(400).json({
-            message: 'Available tickets must be true or false.'
-        })
+        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(availableTickets == null){
+        var error = new Error('Available tickets must be true or false.');
+        error.status = 400;
+        next(error);
     } 
     else {
         try {
@@ -219,9 +223,9 @@ getEventById = async(req, res) => {
     });
 
     if(eventExists == false) {
-        res.status(400).json({
-            message: `Event with ID of ${eventId}, has not been found`
-        })
+        var error = new Error(`Event with ID of ${eventId}, has not been found`);
+        error.status = 400;
+        next(error);
     } else {
         try {
             const event = await queries.getEventByIdQuery(eventId);
@@ -233,7 +237,7 @@ getEventById = async(req, res) => {
         }
     }
 };
-getSingleEventAndDetails = async(req, res) => {
+getSingleEventAndDetails = async(req, res, next) => {
     const eventId = req.params.eventId;
 
     const events = await queries.getAllEventsQuery();
@@ -242,9 +246,9 @@ getSingleEventAndDetails = async(req, res) => {
     });
 
     if(eventExist == false){
-        res.status(400).json({
-            message: `Event with ID of ${eventId}, has not been found.`
-        })
+        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
+        error.status = 400;
+        next(error);
     } else {
         try {
             const eventAndDetails = await queries.getSingleEventAndDetailsQuery(eventId);
@@ -275,7 +279,7 @@ getSingleEventAndDetails = async(req, res) => {
         }
     }
 };
-getEventAndTickets = async(req, res) => {
+getEventAndTickets = async(req, res, next) => {
     const eventId = req.params.eventId;
 
     const events = await queries.getAllEventsQuery();
@@ -289,13 +293,14 @@ getEventAndTickets = async(req, res) => {
     })
 
     if(eventExists == false) {
-        res.status(400).json({
-            message: `Event with ID of ${eventId}, has not been found.`
-        });
-    } else if(ticketExists == false){
-        res.status(400).json({
-            message: `Event with ID of ${eventId}, does not have ticket info.`
-        })
+        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(ticketExists == false){
+        var error = new Error(`Event with ID of ${eventId}, does not have ticket info.`);
+        error.status = 400;
+        next(error);
     } else {
         try {
             const eventAndTickets = await queries.getEventAndTickets(eventId);
@@ -322,7 +327,7 @@ getEventAndTickets = async(req, res) => {
 };
 
 
-adminDeleteEvent = async(req, res) => {
+adminDeleteEvent = async(req, res, next) => {
     const eventId = req.params.eventId;
     const userId = req.params.userId;
 
@@ -336,36 +341,35 @@ adminDeleteEvent = async(req, res) => {
         return userId == user.Id
     });
 
-    if(userExist == false) {
-        res.status(400).json({
-            message: `User with ID of ${userId}, has not been found.`
-        })
+    const userTypes = await userQueries.adminGetOneUserQuery(userId);
+    const checkUserType = userTypes[0].User_type;
+
+    if(checkUserType == "client"){
+        var error = new Error(`User with ID of ${userId}, does not have permissions to do that.`);
+        error.status = 400;
+        next(error);
+    }
+    else if(userExist == false) {
+        var error = new Error(`User with ID of ${userId}, has not been found.`);
+        error.status = 400;
+        next(error);
     }
     else if(eventExist == false) {
-        res.status(400).json({
-            message: `Event with ID of ${eventId}, has not been found.`
-        })
-    } else {
-        const userTypes = await userQueries.adminGetOneUserQuery(userId);
-        const checkUserType = userTypes[0].User_type;
-        // console.log(checkUserType);
-        
-        if(checkUserType == 'admin'){
-            try {
-                await queries.adminDeleteEventQuery(eventId);
-                res.status(200).json({
-                    message: `Event with ID of ${eventId}, has been deleted.`
-                })
-            } catch (error) {
-                res.status(500).send(error);
-            }
-        } else {
-            res.status(400).json({
-                message: `User with ID of ${userId}, does not have permissions to do that.`
+        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
+        error.status = 400;
+        next(error);
+    } 
+    else {
+        try {
+            await queries.adminDeleteEventQuery(eventId);
+            res.status(200).json({
+                message: `Event with ID of ${eventId}, has been deleted.`
             })
+        } catch (error) {
+            res.status(500).send(error);
         }
     }
-};
+}
 
 
 

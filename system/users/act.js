@@ -5,16 +5,16 @@ const jwt = require('jsonwebtoken');
 const helper = require('../helper/helper');
 
 
-getAllUsers = async(req, res) => {
+getAllUsers = async(req, res, next) => {
     const userId = req.params.userId;
 
     const userTypes = await queries.adminGetOneUserQuery(userId);
     const checkUserType = userTypes[0].User_type;
 
     if(checkUserType == 'client'){
-        res.status(400).json({
-            message: `User with ID of ${userId}, does not have permissions to do that.`
-        })
+        var error = new Error(`User with ID of ${userId}, does not have permissions to do that.`);
+        error.status = 400;
+        next(error);
     } else {
         try {
             const users = await queries.getAllUsersQuery();
@@ -27,7 +27,7 @@ getAllUsers = async(req, res) => {
     }
 };
 
-getUserInfoAndEvent = async(req, res) => {
+getUserInfoAndEvent = async(req, res, next) => {
     const userId = req.params.userId;
 
     const users = await getAllUsersQuery();
@@ -42,13 +42,14 @@ getUserInfoAndEvent = async(req, res) => {
     // console.log(eventExist);
 
     if(userExist == false) {
-        res.status(400).json({
-            message: `User with ID of ${userId}, has not been found.`
-        })
-    } else if(eventExist == false) {
-        res.status(400).json({
-            message: `User with ID of ${userId}, does not have any events.`
-        })
+        var error = new Error(`User with ID of ${userId}, has not been found.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(eventExist == false) {
+        var error = new Error(`User with ID of ${userId}, does not have any events.`);
+        error.status = 400;
+        next(error);
     } 
     else {
         try {
@@ -77,7 +78,7 @@ getUserInfoAndEvent = async(req, res) => {
     }
 };
 
-getMyProfile = async(req, res) => {
+getMyProfile = async(req, res, next) => {
     const userId = req.params.userId;
 
     const users = await queries.getAllUsersQuery();
@@ -86,9 +87,9 @@ getMyProfile = async(req, res) => {
     });
 
     if(userExist == false) {
-        res.status(400).json({
-            message: `User with ID of ${userId}, has not been found.`
-        })
+        var error = new Error(`User with ID of ${userId}, has not been found.`);
+        error.status = 400;
+        next(error);
     } else {
         try {
             const myProfile = await queries.adminGetOneUserQuery(userId);
@@ -102,7 +103,7 @@ getMyProfile = async(req, res) => {
 };
 
 
-signUp = async(req, res) => {
+signUp = async(req, res, next) => {
     const userRequest = req.body;
     const firstname = req.body.Firstname;
     const lastname = req.body.Lastname;
@@ -122,31 +123,37 @@ signUp = async(req, res) => {
         return username === user.Username
     });
 
-    if(firstname == "" || lastname == "" || username == "" || email == "" || password == "" || userType == ""){
-        res.status(400).json({
-            message: 'All fields must be filled with information.'
-        })
-    } else if(usernameExists){
-        res.status(409).json({
-            message: `Username ${username}, is already in use. Try with another one.`
-        })
-    } else if(username.length < 4){
-        res.status(409).json({
-            message: `Username ${req.body.Username}, is too short. Your username must contain at least 4 characters.`
-        })
-    } else if(emailExist) {
-        res.status(409).json({
-            message: `Email ${email}. is already in use. Try with another one.`
-        })
-    } else if(helper.symbols.test(email) == false) {
+    if(firstname == null || lastname == null || username == null || email == null || password == null || userType == null){
+        var error = new Error('All fields must be filled with information.');
+        error.status = 400;
+        next(error);
+    } 
+    else if(usernameExists){
+        var error = new Error(`Username ${username}, is already in use. Try with another one.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(username.length < 4){
+        var error = new Error(`Username ${req.body.Username}, is too short. Your username must contain at least 4 characters.`);
+        error.status = 400;
+        next(error);
+    }
+    else if(emailExist){
+        var error = new Error(`Email ${email}. is already in use. Try with another one.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(helper.symbols.test(email) == false) {
         return res.status(400).json({
             message: `Email ${email}, is not valid. Try with another one.`
         });
-    } else if(password.length <= 8) {
-        res.status(409).json({
-            message: 'Your password must contain at least 6 characters.'
-        })
-    } else if(helper.passwordTest.test(password) == false) {
+    } 
+    else if(password.length <= 8) {
+        var error = new Error('Your password must contain at least 6 characters.');
+        error.status = 400;
+        next(error);
+    } 
+    else if(helper.passwordTest.test(password) == false) {
         return res.status(400).json({
             message: 'Your password must contain 1 lower case letter, 1 capital letter, 1 or more numbers and a special character as !@#$%^&*'
         })
@@ -166,7 +173,7 @@ signUp = async(req, res) => {
 };
 
 
-logIn = async(req, res) => {
+logIn = async(req, res, next) => {
     const username = req.body.Username;
     // const email = req.body.Email;
     const password = req.body.Password;
@@ -176,27 +183,27 @@ logIn = async(req, res) => {
         return username === user.Username
     });
 
-    if(username == ""){
-        res.status(400).json({
-            message: 'Please enter your username.'
-        })
-    } else if(password == ""){
-        res.status(400).json({
-            message: 'Please enter your password.'
-        })
-    } else if(!usernameExists){
-        res.status(400).json({
-            message: `Username ${username}, has not been found. Please try with another one.`
-        })
-    } else if(username.length <= 4) {
-        res.status(409).json({
-            message: `Username ${username}, is not valid. Your username should contain 4 or more characters.`
-        })
-    } else if(password.length <= 1){
-        res.status(409).json({
-            message: `Password ${password}, is not valid.`
-        })
-    } else {
+    if(username == null || password == null){
+        var error = new Error('Please enter your username and username.');
+        error.status = 400;
+        next(error);
+    } 
+    else if(usernameExists == false){
+        var error = new Error(`Username ${username}, has not been found. Please try with another one.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(username.length <= 4) {
+        var error = new Error(`Username ${username}, is not valid. Your username should contain 4 or more characters.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(password.length <= 1){
+        var error = new Error(`Password ${password}, is not valid.`);
+        error.status = 400;
+        next(error);
+    } 
+    else {
         try {
             const user = await queries.logInUserQuery(username);
             const newUser = user[0];
@@ -218,7 +225,7 @@ logIn = async(req, res) => {
 
 
 
-editMyProfile = async(req, res) => {
+editMyProfile = async(req, res, next) => {
     const userId = req.params.userId;
 
     const name = req.body.Name;
@@ -234,25 +241,25 @@ editMyProfile = async(req, res) => {
     });
 
     const uneditedUsername = users.filter(user => {
-        if(username == "") {
+        if(username == null) {
             username == user.Username
         } else {
             user.Username = username
         }
 
-        if(name == "") {
+        if(name == null) {
             name == user.Name
         } else {
             user.Name = name
         }
 
-        if(email == ""){
+        if(email == null){
             email == user.Email
         } else {
             user.Email = email
         }
 
-        if(lastname == ""){
+        if(lastname == null){
             lastName == user.Lastname
         } else {
             user.Lastname = lastname
@@ -264,9 +271,9 @@ editMyProfile = async(req, res) => {
     console.log(finalResults.Username);
 
     if(userExist == false) {
-        res.status(400).json({
-            message: `User with ID of ${userId}, has not been found.`
-        })
+        var error = new Error(`User with ID of ${userId}, has not been found.`);
+        error.status = 400;
+        next(error);
     } 
     else {
         try {
@@ -283,7 +290,7 @@ editMyProfile = async(req, res) => {
 
 // ADMIN
 
-adminDeleteUserProfile = async(req, res) => {
+adminDeleteUserProfile = async(req, res, next) => {
     const userId = req.params.userId;
     const adminId = req.params.adminId;
 
@@ -297,13 +304,14 @@ adminDeleteUserProfile = async(req, res) => {
     });
 
     if(checkUserType == 'client'){
-        res.status(400).json({
-            message: 'You dont have permissions to do that.'
-        })
-    } else if (userExist == false) {
-        res.status(400).json({
-            message: `User with ID of ${userId}, has not been found.`
-        })
+        var error = new Error(`You dont have permissions to do that.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if (userExist == false) {
+        var error = new Error(`User with ID of ${userId}, has not been found.`);
+        error.status = 400;
+        next(error);
     } else {
         try {
             await queries.adminDeleteUserProfileQuery(userId);
@@ -318,7 +326,7 @@ adminDeleteUserProfile = async(req, res) => {
 };
 
 
-adminGetOneUser = async(req, res) => {
+adminGetOneUser = async(req, res, next) => {
     const userId = req.params.userId;
     const adminId = req.params.adminId;
 
@@ -331,13 +339,14 @@ adminGetOneUser = async(req, res) => {
     });
 
     if(checkUserType == 'client'){
-        res.status(400).json({
-            message: `User with ID of ${adminId}, does not have permissions to do that.`
-        })
-    } else if(!userExist) {
-        res.status(400).json({
-            message: `User with ID of ${userId}, has not been found. Try with another one.`
-        })
+        var error = new Error(`User with ID of ${adminId}, does not have permissions to do that.`);
+        error.status = 400;
+        next(error);
+    } 
+    else if(userExist == false){
+        var error = new Error(`User with ID of ${userId}, has not been found. Try with another one.`);
+        error.status = 400;
+        next(error);
     } else {
         try {
             const user = await queries.adminGetOneUserQuery(userId);
