@@ -7,14 +7,14 @@ errorHandler = (err, req, res, next) => {
     var errorObj = {
         message: err.message
     };
-    res.status(err.status).json(errorObj);
+    res.status(400).json(errorObj);
 }; 
 
 wrongRoute = (req, res) => {
     var wrongRouteErrorObj = {
         message: 'Wrong route. Please try with another one.'
     };
-    res.status(400).json(wrongRouteErrorObj);
+    res.status(404).json(wrongRouteErrorObj);
 };
 
 module.exports = {

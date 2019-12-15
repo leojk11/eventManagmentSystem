@@ -7,7 +7,7 @@ addCard = async(req, res, next) => {
     const exMounth = req.body.Ex_mounth;
     const exYear = req.body.Ex_year;
     const cardNumber = req.body.Card_number;
-    const cardOwnerName = req.body.Card_owner;
+    const cardOwnerName = req.body.Card_owner_name;
     const moneyAmount = 0;
     const userId = req.params.userId;
 
@@ -29,7 +29,7 @@ addCard = async(req, res, next) => {
         var error = new Error(`Ex. year ${exYear} is not valid. Please enter another one.`);
         error.status = 400;
         next(error);
-    }
+    }       
     else if(cardNumber.toString().length < 16){
         var error = new Error('Your card number must be at least 16 characters long.');
         error.status = 400;
@@ -200,14 +200,25 @@ deleteCard = async(req, res, next) => {
 };
 
 //ADMIN
-adminGelAllCards = async(req, res) => {
-    try {
-        const cards = await queries.adminGetAllCardsQuery();
-        res.status(200).json({
-            cards
-        })
-    } catch (error) {
-        res.status(500).send(error);
+adminGelAllCards = async(req, res, next) => {
+    const adminId = req.params.adminId;
+
+    const userTypes = await userQueries.adminGetOneUserQuery(adminId);
+    const checkUserType = userTypes[0].User_type;
+
+    if(checkUserType == "client"){
+        var error = new Error(`User with ID if ${adminId}, does not have permissions to do that.`);
+        error.status = 400;
+        next(error);
+    } else {
+        try {
+            const cards = await queries.adminGetAllCardsQuery();
+            res.status(200).json({
+                cards
+            })
+        } catch (error) {
+            res.status(500).send(error);
+        }
     }
 };
 getOneCard = async(req, res, next) => {

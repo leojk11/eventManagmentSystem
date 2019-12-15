@@ -11,7 +11,7 @@ router.patch('/buy-ticket/:ticketId/:userId', middlewares.verifyToken, actions.b
 
 router.delete('/delete-card/:cardId', middlewares.verifyToken, actions.deleteCard);
 
-router.get('/admin/all-cards', middlewares.verifyToken, actions.adminGelAllCards);
+router.get('/admin/:adminId/all-cards', middlewares.verifyToken, actions.adminGelAllCards);
 router.get('/my-card/:userId', middlewares.verifyToken, actions.getOneCard);
 
 module.exports = router;

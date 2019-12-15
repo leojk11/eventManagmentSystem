@@ -8,23 +8,35 @@ const helper = require('../helper/helper');
 getAllUsers = async(req, res, next) => {
     const userId = req.params.userId;
 
-    const userTypes = await queries.adminGetOneUserQuery(userId);
-    const checkUserType = userTypes[0].User_type;
+    const users = await queries.getAllUsersQuery();
+    const userExist = users.some(user => {
+        return userId == user.Id
+    })
 
-    if(checkUserType == 'client'){
-        var error = new Error(`User with ID of ${userId}, does not have permissions to do that.`);
+    if(userExist == true){
+        const userTypes = await queries.adminGetOneUserQuery(userId);
+        const checkUserType = userTypes[0].User_type;
+    
+        if(checkUserType == 'client'){
+            var error = new Error(`User with ID of ${userId}, does not have permissions to do that.`);
+            error.status = 400;
+            next(error);
+        } else {
+            try {
+                const users = await queries.getAllUsersQuery();
+                res.status(200).json({
+                    users
+                })
+            } catch (error) {
+                res.status(500).send(error);
+            }
+        }
+    } else {
+        var error = new Error(`Admin with ID of ${userId}, has not been found.`)
         error.status = 400;
         next(error);
-    } else {
-        try {
-            const users = await queries.getAllUsersQuery();
-            res.status(200).json({
-                users
-            })
-        } catch (error) {
-            res.status(500).send(error);
-        }
     }
+    
 };
 
 getUserInfoAndEvent = async(req, res, next) => {
@@ -111,7 +123,7 @@ signUp = async(req, res, next) => {
     const email = req.body.Email;
     const companyName = req.body.Comapny_name;
     const password = req.body.Password;
-    const userType = req.body.User_type;
+    const userType = 'client';
 
     const emails = await queries.getAllUsersQuery();
     const emailExist = emails.some(user => {
@@ -123,7 +135,7 @@ signUp = async(req, res, next) => {
         return username === user.Username
     });
 
-    if(firstname == null || lastname == null || username == null || email == null || password == null || userType == null){
+    if(firstname == null || lastname == null || username == null || email == null || password == null){
         var error = new Error('All fields must be filled with information.');
         error.status = 400;
         next(error);
@@ -134,7 +146,7 @@ signUp = async(req, res, next) => {
         next(error);
     } 
     else if(username.length < 4){
-        var error = new Error(`Username ${req.body.Username}, is too short. Your username must contain at least 4 characters.`);
+        var error = new Error(`Username ${req.body.Username}, is not valid. Your username must contain at least 4 characters.`);
         error.status = 400;
         next(error);
     }
@@ -216,9 +228,14 @@ logIn = async(req, res, next) => {
                         message: 'You have been logged in.'
                     });
                 })
-            } 
+            } else {
+                var error = new Error('You have entered wrong password');
+                error.status = 400;
+                next(error);
+            }
         } catch (error) {
             res.status(500).send(error);
+            console.log(error);
         }
     }
 };
@@ -302,17 +319,25 @@ adminDeleteUserProfile = async(req, res, next) => {
     const userExist = users.some(user => {
         return userId == user.Id
     });
+    const adminExist = users.some(user => {
+        return adminId == user.Id
+    })
 
-    if(checkUserType == 'client'){
+    if(adminExist == false){
+        var error = new Error(`Admin with ID of ${adminId}, does not exist.`);
+        error.status = 400;
+        next(error);
+    } else if (userExist == false) {
+        var error = new Error(`User with ID of ${userId}, has not been found.`);
+        error.status = 400;
+        next(error);
+    }
+    else if(checkUserType == 'client'){
         var error = new Error(`You dont have permissions to do that.`);
         error.status = 400;
         next(error);
     } 
-    else if (userExist == false) {
-        var error = new Error(`User with ID of ${userId}, has not been found.`);
-        error.status = 400;
-        next(error);
-    } else {
+     else {
         try {
             await queries.adminDeleteUserProfileQuery(userId);
     

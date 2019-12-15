@@ -51,7 +51,7 @@ getAllTicketsQuery = () => {
     });
 };
 getOnlyOneTicketQuery = (eventId) => {
-    const query = "SELECT * FROM tickets WHERE Id = ?";
+    const query = "SELECT * FROM tickets WHERE Event_id = ?";
     return new Promise((res, rej) => {
         connection.query(query, [eventId], (error, results, fields) => {
             if(error){
