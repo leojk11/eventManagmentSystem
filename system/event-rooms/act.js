@@ -12,21 +12,23 @@ adminCreateRooms = async(req, res, next) => {
     const checkUserType = userTypes[0].User_type;
     
     if(checkUserType == "client"){
-        var error = new Error(`User with ID if ${adminId}, does not have permissions to do that.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${adminId}, does not have permissions to create rooms.`
+        });
     } else if(roomName == null || equipAvailable == null || roomCapacity == null){
-        var error = new Error('You must enter room name, equipement available, room capacity.');
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: 'You have to enter room name, equipement available, room capacity.'
+        });
     } else {
         try {
             await queries.adminCreateRoomsQuery(roomName, equipAvailable, roomCapacity);
             res.status(200).json({
                 message: 'Room has been created.'
-            })
+            });
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     };
 };
@@ -41,24 +43,26 @@ adminDeleteRooms = async(req, res, next) => {
     const rooms = await queries.getAllRoomsQuery();
     const roomExists = rooms.some(room => {
         return roomId == room.Id
-    })
+    });
 
     if(checkUserType == "client"){
-        var error = new Error(`User with ID of ${adminId}, does not have permissions do to that.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${adminId}, does not have permissions to do that.`
+        });
     } else if(roomExists == false) {
-        var error = new Error(`Room with ID of ${roomId}, has not been found.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Room with ID of ${roomId}, does not exist.`
+        });
     } else {
         try {
             await queries.adminDeleteRoomQuery(roomId);
             res.status(200).json({
                 message: `Room with ID of ${roomId}, has been deleted.`
-            })
+            });
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
 };
@@ -68,10 +72,9 @@ getAllRooms = async(req, res) => {
         const rooms = await queries.getAllRoomsQuery();
         res.status(200).json({
             rooms
-        })
+        });
     } catch (error) {
-        res.status(500).send(error);
-        // console.log(error);
+        res.status(500).send(error.message);
     }
 };
 
@@ -81,12 +84,13 @@ getSingleRoom = async(req, res, next) => {
     const rooms = await queries.getAllRoomsQuery();
     const roomExists = rooms.some(room => {
         return roomId == room.Id
-    })
+    });
 
     if(roomExists == false) {
-        var error = new Error(`Room with ID of ${roomId}, has not been found.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Roo wiht ID of ${roomId}, does not exist.`
+        });
     } else {
         try {
             const singleRoom = await queries.getSingleRoomQuery(roomId);
@@ -94,8 +98,7 @@ getSingleRoom = async(req, res, next) => {
                 singleRoom
             });
         } catch (error) {
-            res.status(500).send(error);
-            // console.log(error);
+            res.status(500).send(error.message);
         }
     }
 };

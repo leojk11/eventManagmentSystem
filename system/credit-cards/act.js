@@ -18,22 +18,22 @@ addCard = async (req, res, next) => {
     // console.log(cardNumbersExist);
 
     if (cardType == null || exMounth == null || exYear == null || cardNumber == null || cardOwnerName == null) {
-        res.status(400).json({
+        res.status(406).json({
             success: false,
             message: 'You must enter card type, expiring mounth, expiring yearm card number and card owner name.'
         });
     } else if (exMounth.length < 1 || exMounth > 12) {
-        res.status(400).json({
+        res.status(406).json({
             success: false,
             message: `Ex. mount ${exMounth} is not valid. Please try with another one.`
         });
     } else if (exYear.length < 4 || exYear < 2019) {
-        res.status(400).json({
+        res.status(406).json({
             success: false,
             message: `Ex. year ${exYear} is not valid. Please try with anoher one.`
         });
     } else if (cardNumber.toString().length < 16) {
-        res.status(400).json({
+        res.status(406).json({
             success: false,
             message: 'Your card number have to be at least 16 characters long.'
         });
