@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const helper = require('../helper/helper');
 
 
-getAllUsers = async(req, res, next) => {
+getAllUsers = async(req, res) => {
     const userId = req.params.userId;
 
     const users = await queries.getAllUsersQuery();
@@ -18,28 +18,30 @@ getAllUsers = async(req, res, next) => {
         const checkUserType = userTypes[0].User_type;
     
         if(checkUserType == 'client'){
-            var error = new Error(`User with ID of ${userId}, does not have permissions to do that.`);
-            error.status = 400;
-            next(error);
+            res.status(400).json({
+                success: false,
+                message: 'You don\'t have permissions to do that.'
+            });
         } else {
             try {
                 const users = await queries.getAllUsersQuery();
                 res.status(200).json({
                     users
-                })
+                });
             } catch (error) {
-                res.status(500).send(error);
+                res.status(500).send(error.message);
             }
         }
     } else {
-        var error = new Error(`Admin with ID of ${userId}, has not been found.`)
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Admin with ID of ${userId}, does not exist.`
+        });
     }
     
 };
 
-getUserInfoAndEvent = async(req, res, next) => {
+getUserInfoAndEvent = async(req, res) => {
     const userId = req.params.userId;
 
     const users = await getAllUsersQuery();
@@ -54,14 +56,16 @@ getUserInfoAndEvent = async(req, res, next) => {
     // console.log(eventExist);
 
     if(userExist == false) {
-        var error = new Error(`User with ID of ${userId}, has not been found.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${userId}, does not exist.`
+        });
     } 
     else if(eventExist == false) {
-        var error = new Error(`User with ID of ${userId}, does not have any events.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User with ID if ${userId}, does not have any events.`
+        });
     } 
     else {
         try {
@@ -73,8 +77,7 @@ getUserInfoAndEvent = async(req, res, next) => {
                     host: events.Host
                 }
                 return eventsObj
-            })
-            // console.log(events[0].title);
+            });
             res.status(200).json({
                 userInfo:{
                     name: userInfoAndEvents[0].Name,
@@ -82,15 +85,15 @@ getUserInfoAndEvent = async(req, res, next) => {
                     email: userInfoAndEvents[0].Email
                 },
                 events
-            })
+            });
             
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
 };
 
-getMyProfile = async(req, res, next) => {
+getMyProfile = async(req, res) => {
     const userId = req.params.userId;
 
     const users = await queries.getAllUsersQuery();
@@ -99,23 +102,24 @@ getMyProfile = async(req, res, next) => {
     });
 
     if(userExist == false) {
-        var error = new Error(`User with ID of ${userId}, has not been found.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User tiwh ID of ${userId}, does not exist.`
+        });
     } else {
         try {
             const myProfile = await queries.adminGetOneUserQuery(userId);
             res.status(200).json({
                 myProfile
-            })
+            });
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
 };
 
 
-signUp = async(req, res, next) => {
+signUp = async(req, res) => {
     const userRequest = req.body;
     const firstname = req.body.Firstname;
     const lastname = req.body.Lastname;
@@ -136,39 +140,46 @@ signUp = async(req, res, next) => {
     });
 
     if(firstname == null || lastname == null || username == null || email == null || password == null){
-        var error = new Error('All fields must be filled with information.');
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: 'All fiels need to be filled with information.'
+        });
     } 
     else if(usernameExists){
-        var error = new Error(`Username ${username}, is already in use. Try with another one.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Username ${username}, is already in use. Try with another one.`
+        });
     } 
     else if(username.length < 4){
-        var error = new Error(`Username ${req.body.Username}, is not valid. Your username must contain at least 4 characters.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Username ${username}, is not valid. Your username must contain at leas 4 characters.`
+        });
     }
     else if(emailExist){
-        var error = new Error(`Email ${email}. is already in use. Try with another one.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Email ${email}, is already in use. Try with another one.`
+        });
     } 
     else if(helper.symbols.test(email) == false) {
         return res.status(400).json({
+            success: false,
             message: `Email ${email}, is not valid. Try with another one.`
         });
     } 
     else if(password.length <= 8) {
-        var error = new Error('Your password must contain at least 6 characters.');
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: 'Password should contain at least 6 characters.'
+        });
     } 
     else if(helper.passwordTest.test(password) == false) {
         return res.status(400).json({
+            success: false,
             message: 'Your password must contain 1 lower case letter, 1 capital letter, 1 or more numbers and a special character as !@#$%^&*'
-        })
+        });
     } 
      else {
         try {
@@ -179,13 +190,13 @@ signUp = async(req, res, next) => {
                 message: 'User has been created!'
             });
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
 };
 
 
-logIn = async(req, res, next) => {
+logIn = async(req, res) => {
     const username = req.body.Username;
     // const email = req.body.Email;
     const password = req.body.Password;
@@ -196,24 +207,28 @@ logIn = async(req, res, next) => {
     });
 
     if(username == null || password == null){
-        var error = new Error('Please enter your username and username.');
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: 'Please nter your username and password.'
+        });
     } 
     else if(usernameExists == false){
-        var error = new Error(`Username ${username}, has not been found. Please try with another one.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Username ${username}, does not exist. Try with another one.`
+        });
     } 
     else if(username.length <= 4) {
-        var error = new Error(`Username ${username}, is not valid. Your username should contain 4 or more characters.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Username ${username}, is not valid. Username should contain at least 4 characters.`
+        });
     } 
     else if(password.length <= 1){
-        var error = new Error(`Password ${password}, is not valid.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: 'Password is not valid.'
+        });
     } 
     else {
         try {
@@ -229,20 +244,20 @@ logIn = async(req, res, next) => {
                     });
                 })
             } else {
-                var error = new Error('You have entered wrong password');
-                error.status = 400;
-                next(error);
+                res.status(400).json({
+                    success: false,
+                    message: 'You have entered wrong password.'
+                });
             }
         } catch (error) {
-            res.status(500).send(error);
-            console.log(error);
+            res.status(500).send(error.message);
         }
     }
 };
 
 
 
-editMyProfile = async(req, res, next) => {
+editMyProfile = async(req, res) => {
     const userId = req.params.userId;
 
     const name = req.body.Name;
@@ -285,12 +300,12 @@ editMyProfile = async(req, res, next) => {
     });
 
     const finalResults = uneditedUsername[0];
-    console.log(finalResults.Username);
 
     if(userExist == false) {
-        var error = new Error(`User with ID of ${userId}, has not been found.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User with ID if ${userId}, does not exist.`
+        });
     } 
     else {
         try {
@@ -298,16 +313,16 @@ editMyProfile = async(req, res, next) => {
     
             res.status(200).json({
                 message: `User with ID of ${userId}, has been updated.`
-            })
+            });
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
 };
 
 // ADMIN
 
-adminDeleteUserProfile = async(req, res, next) => {
+adminDeleteUserProfile = async(req, res) => {
     const userId = req.params.userId;
     const adminId = req.params.adminId;
 
@@ -324,18 +339,21 @@ adminDeleteUserProfile = async(req, res, next) => {
     })
 
     if(adminExist == false){
-        var error = new Error(`Admin with ID of ${adminId}, does not exist.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Admin with ID of ${adminId}, does not exist.`
+        });
     } else if (userExist == false) {
-        var error = new Error(`User with ID of ${userId}, has not been found.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${userId}, does not exist.`
+        });
     }
     else if(checkUserType == 'client'){
-        var error = new Error(`You dont have permissions to do that.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: 'You don\'t have permissions to do that.'
+        });
     } 
      else {
         try {
@@ -345,13 +363,13 @@ adminDeleteUserProfile = async(req, res, next) => {
                 message: `User with ID of ${userId}, has been deleted.`
             });
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
 };
 
 
-adminGetOneUser = async(req, res, next) => {
+adminGetOneUser = async(req, res) => {
     const userId = req.params.userId;
     const adminId = req.params.adminId;
 
@@ -364,14 +382,16 @@ adminGetOneUser = async(req, res, next) => {
     });
 
     if(checkUserType == 'client'){
-        var error = new Error(`User with ID of ${adminId}, does not have permissions to do that.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${adminId}, does not have permissions to do that.`
+        });
     } 
     else if(userExist == false){
-        var error = new Error(`User with ID of ${userId}, has not been found. Try with another one.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${userId}, does not exist.`
+        });
     } else {
         try {
             const user = await queries.adminGetOneUserQuery(userId);
@@ -379,7 +399,7 @@ adminGetOneUser = async(req, res, next) => {
                 user
             })
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
 };

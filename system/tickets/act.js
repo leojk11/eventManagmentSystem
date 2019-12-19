@@ -3,7 +3,7 @@ const userQueries = require('../users/query');
 const eventQueries = require('../eventi/query');
 
 
-createTicket = async(req, res, next) => {
+createTicket = async(req, res) => {
     const price = req.body.Price;
     const availableAm = req.body.Available_amount;
     const eventInfo = req.body.Event_info;
@@ -20,40 +20,32 @@ createTicket = async(req, res, next) => {
         return eventId == event.Id
     });
 
-    const tickets = await queries.getAllTicketsQuery();
-    const userHaveTicket = tickets.some(tikcet => {
-        return userId == user.User_id
-    });
-
     if(userExists == false) {
-        var error = new Error(`User with ID of ${userId}, has not been found.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User with ID if ${userId}, does not exist.`
+        });
     } 
     else if(eventExists == false) {
-        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
-        error.status = 400;
-        next(error);
-    } 
-    else if(userHaveTicket == true) {
-        var error = new Error(`User with ID of ${userId}, already have created ticket. One user can only have one ticket.`);
-        error.status = 400;
-        next(error);
-    } 
+        res.status(400).json({
+            success: false,
+            message: `Event with ID of ${eventId}, does not exist.`
+        });
+    }
     else if(eventInfo == null || availableAm == null || price == null) {
-        var error = new Error('Please enter ticket price, available amount and some event info.');
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: 'All fields need to be filled with information.'
+        });
     } 
     else {
         try {
             await queries.createTicketQuery(price, availableAm, eventInfo, eventId, userId);
             res.status(200).json({
                 message: `Ticket for event ${eventId}, has been created.`
-            })
+            });
         } catch (error) {
-            res.status(500).send(error);
-            console.log(error);
+            res.status(500).send(error.message);
         }
     }
 };
@@ -63,13 +55,13 @@ getAllAvailableTickets = async(req, res) => {
         const availableTickets = await queries.getAllAvailableTicketsQuery();
         res.status(200).json({
             availableTickets
-        })
+        });
     } catch (error) {
-        res.status(500).send(error);
+        res.status(500).send(error.message);
     }
 };
 
-getMyTickets = async(req, res, next) => {
+getMyTickets = async(req, res) => {
     const userId = req.params.userId;
 
     const users = await userQueries.getAllUsersQuery();
@@ -80,16 +72,18 @@ getMyTickets = async(req, res, next) => {
     const tickets = await queries.getAllTicketsQuery();
     const userTicketExists = tickets.some(user => {
         return userId == user.User_id
-    })
+    });
 
     if(userExists == false){
-        var error = new Error(`User with ID of ${userId}, does not exist.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${userId}, does not exist.`
+        });
     } else if(userTicketExists == false) {
-        var error = new Error(`User with ID of ${userId}, does not have any tickets.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${userId}, does not have any tickes`
+        });
     } 
     else {
         try {
@@ -101,7 +95,7 @@ getMyTickets = async(req, res, next) => {
                     price: info.Price,
                     eventId: info.Event_id
                 }
-                return ticketsObj
+                return ticketsObj;
             })
             res.status(200).json({
                 userInfo: {
@@ -114,7 +108,7 @@ getMyTickets = async(req, res, next) => {
                 },
             });
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
 };
@@ -125,13 +119,13 @@ getAllTickets = async(req, res) => {
         const tickets = await queries.getAllTicketsQuery();
         res.status(200).json({
             tickets
-        })
+        });
     } catch (error) {
-        res.status(500).send(error);   
+        res.status(500).send(error.message);   
     }
 };
 
-getOnlyOneTicket = async(req, res, next) => {
+getOnlyOneTicket = async(req, res) => {
     const eventId = req.params.eventId;
 
     const events = await eventQueries.getEventByIdQuery(eventId);
@@ -145,14 +139,16 @@ getOnlyOneTicket = async(req, res, next) => {
     });
 
     if(eventExists == false) {
-        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Event with ID of ${eventId}, does not exist.`
+        });
     } 
     else if (eventTicketsExists == false){
-        var error = new Error(`Event with ID of ${eventId}, does not have any tickets.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Event with ID of ${eventId}, does not have any tickets.`
+        });
     } else {
         try {
             const ticket = await queries.getOnlyOneTicketQuery(eventId);
@@ -160,7 +156,7 @@ getOnlyOneTicket = async(req, res, next) => {
                 ticket
             });
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
 };

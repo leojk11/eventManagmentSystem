@@ -5,7 +5,7 @@ const ticketQueries = require('../tickets/query');
 
 
 // CREATE EVENT
-createEvent = async(req, res, next) => {
+createEvent = async(req, res) => {
     const title = req.body.Title;
     const shortInfo = req.body.Short_info;
     const host = req.body.Host;
@@ -18,29 +18,30 @@ createEvent = async(req, res, next) => {
     });
 
     if(userExists == false) {
-        var error = new Error(`User with ID if ${userId}, has not been found`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${userId}, does not exist.`
+        });
     } else if(title == null || shortInfo == null || host == null) {
-        var error = new Error('Please enter event title, short info about your event and who is the host.');
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: 'You have to enter event title, short info about your event and who is the host.'
+        });
     } 
     else {
         try {
             await queries.createEventQuery(title, shortInfo, host, userId);
             res.status(200).json({
                 message: 'Event has been created.'
-            })
+            });
         } catch (error) {
-            // console.log(error);
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
 };
 
 // ADD DETAILS
-addDetails = async(req, res, next) => {
+addDetails = async(req, res) => {
     const eventId = req.params.eventId;
     const startTime = req.body.Start_time;
     const endTime = req.body.End_time;
@@ -57,7 +58,7 @@ addDetails = async(req, res, next) => {
     const rooms = await roomsQueires.getAllRoomsQuery();
     const roomExists = rooms.some(room => {
         return eventRoom == room.Id
-    })
+    });
 
     const eventDetails = await queries.getAllDetailsQuery();
     const eventDetailsExist = eventDetails.some(details => {
@@ -65,38 +66,42 @@ addDetails = async(req, res, next) => {
     });
 
     if(eventDetailsExist == true) {
-        var error = new Error(`Details for event with ID of ${eventId}, already exist.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Details for event with ID of ${eventId}, already exist.`
+        });
     } 
     else if(eventExists == false) {
-        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Event with ID of ${eventId}, does not exist.`
+        });
     } 
     else if(roomExists == false) {
-        var error = new Error(`Room with the number of ${eventRoom}, does not exist.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Room with number of ${eventRoom}, does not exist.`
+        });
     } 
     else if(startTime == null || endTime == null || date == null || ticketPrice == null || eventRoom == null) {
-        var error = new Error('You must enter start time, end time, date, ticket price and event room number.');
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: 'All fields need to be filled.'
+        });
     } 
     else {
         try {
             await queries.addEventDetailsQuery(startTime, endTime, date, ticketPrice, availableTickets, eventRoom, eventId);
             res.status(200).json({
                 message: 'Event details have been updated.'
-            })
+            });
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
 };
 // UPDATE DETAILS
-updateDetails = async(req, res, next) => {
+updateDetails = async(req, res) => {
     const eventId = req.params.eventId;
 
     const startTime = req.body.Start_time;
@@ -147,14 +152,16 @@ updateDetails = async(req, res, next) => {
     // console.log(finalResults.Ticket_price);
 
     if(eventExists == false) {
-        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Event with ID of ${eventId}, does not exist.`
+        });
     } 
     else if(availableTickets == null){
-        var error = new Error('Available tickets must be true or false.');
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: 'Available tickets field cannot be null.'
+        });
     } 
     else {
         try {
@@ -164,8 +171,7 @@ updateDetails = async(req, res, next) => {
                 message: `Event with the ID of ${eventId}, has been updated!`
             });
         } catch (error) {
-            res.status(500).send(error);
-            console.log(error);
+            res.status(500).send(error.message);
         }
     }
     
@@ -177,9 +183,9 @@ getAllEvents = async(req, res) => {
         const events = await queries.getAllEventsQuery();
         res.status(200).json({
             events
-        })
+        });
     } catch (error) {
-        res.status(500).send(error);
+        res.status(500).send(error.message);
     }
 };
 getAllEventsAndDetails = async(req, res) => {
@@ -208,10 +214,9 @@ getAllEventsAndDetails = async(req, res) => {
         })
         res.status(200).json({
             events
-        })
+        });
     } catch (error) {
-        res.status(500).send(error);
-        console.log(error);
+        res.status(500).send(error.message);
     }
 };
 getEventById = async(req, res) => {
@@ -223,21 +228,23 @@ getEventById = async(req, res) => {
     });
 
     if(eventExists == false) {
-        var error = new Error(`Event with ID of ${eventId}, has not been found`);
-        error.status = 400;
-        next(error);
-    } else {
+        res.status(400).json({
+            success: false,
+            message: `Event with ID of ${eventId}, does not exist.`
+        });
+    } 
+    else {
         try {
             const event = await queries.getEventByIdQuery(eventId);
             res.status(200).json({
                 event
             });
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
 };
-getSingleEventAndDetails = async(req, res, next) => {
+getSingleEventAndDetails = async(req, res) => {
     const eventId = req.params.eventId;
 
     const events = await queries.getAllEventsQuery();
@@ -246,10 +253,12 @@ getSingleEventAndDetails = async(req, res, next) => {
     });
 
     if(eventExist == false){
-        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
-        error.status = 400;
-        next(error);
-    } else {
+        res.status(400).json({
+            success: false,
+            message: `Event with ID if ${eventId}, does not exist.`
+        });
+    } 
+    else {
         try {
             const eventAndDetails = await queries.getSingleEventAndDetailsQuery(eventId);
             const event = eventAndDetails.map(events => {
@@ -268,18 +277,17 @@ getSingleEventAndDetails = async(req, res, next) => {
                         event_room: events.Event_room
                     }
                 }
-                return eventObj
+                return eventObj;
             })
             res.status(200).json({
                 event
-            })
+            });
         } catch (error) {
-            res.status(500).send(error);
-            console.log(error);
+            res.status(500).send(error.message);
         }
     }
 };
-getEventAndTickets = async(req, res, next) => {
+getEventAndTickets = async(req, res) => {
     const eventId = req.params.eventId;
 
     const events = await queries.getAllEventsQuery();
@@ -293,15 +301,18 @@ getEventAndTickets = async(req, res, next) => {
     })
 
     if(eventExists == false) {
-        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Event with ID if ${eventId}, does not exist.`
+        });
     } 
     else if(ticketExists == false){
-        var error = new Error(`Event with ID of ${eventId}, does not have ticket info.`);
-        error.status = 400;
-        next(error);
-    } else {
+        res.status(400).json({
+            success: false,
+            message: `Event with ID of ${eventId}, does not have tickets.`
+        });
+    }
+    else {
         try {
             const eventAndTickets = await queries.getEventAndTickets(eventId);
             const event = eventAndTickets.map(events => {
@@ -319,15 +330,14 @@ getEventAndTickets = async(req, res, next) => {
             })
             res.status(200).json({
                 event
-            })
+            });
         } catch (error) {
-            res.status(400).send(error);
+            res.status(400).send(error.message);
         }
     }
 };
 
-
-adminDeleteEvent = async(req, res, next) => {
+adminDeleteEvent = async(req, res) => {
     const eventId = req.params.eventId;
     const userId = req.params.userId;
 
@@ -344,32 +354,35 @@ adminDeleteEvent = async(req, res, next) => {
     const userTypes = await userQueries.adminGetOneUserQuery(userId);
     const checkUserType = userTypes[0].User_type;
 
-    if(checkUserType == "client"){
-        var error = new Error(`User with ID of ${userId}, does not have permissions to do that.`);
-        error.status = 400;
-        next(error);
+    if(userExist == false) {
+        res.status(400).json({
+            success: false,
+            message: `User with ID of ${userId}, does not exist.`
+        });
     }
-    else if(userExist == false) {
-        var error = new Error(`User with ID of ${userId}, has not been found.`);
-        error.status = 400;
-        next(error);
-    }
+    else if(checkUserType == "client"){
+        res.status(400).json({
+            success: false,
+            message: `You don\'t hav permissions to do that.`
+        });
+    } 
     else if(eventExist == false) {
-        var error = new Error(`Event with ID of ${eventId}, has not been found.`);
-        error.status = 400;
-        next(error);
+        res.status(400).json({
+            success: false,
+            message: `Event with ID of ${eventId}, does not exist.`
+        });
     } 
     else {
         try {
             await queries.adminDeleteEventQuery(eventId);
             res.status(200).json({
                 message: `Event with ID of ${eventId}, has been deleted.`
-            })
+            });
         } catch (error) {
-            res.status(500).send(error);
+            res.status(500).send(error.message);
         }
     }
-}
+};
 
 
 
