@@ -4,6 +4,7 @@ const eventsRoutes = require('../eventi/router');
 const cardRoutes = require('../credit-cards/router');
 const ticketRoutes = require('../tickets/router');
 const eventRooms = require('../event-rooms/router');
+const roomReservations = require('../room-reservation/router');
 
 const mainRouter = express.Router();
 
@@ -12,5 +13,6 @@ mainRouter.use(eventsRoutes);
 mainRouter.use(cardRoutes);
 mainRouter.use(ticketRoutes);
 mainRouter.use(eventRooms);
+mainRouter.use(roomReservations);
 
 module.exports = mainRouter;
