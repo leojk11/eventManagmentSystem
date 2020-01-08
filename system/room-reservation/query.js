@@ -13,8 +13,8 @@ getAllReservationsQuery = () => {
     })
 };
 
-getOnlyRoomIdQuery = (eventName) => {
-    const query = "SELECT Id FROM event_rooms WHERE Room_name = ?";
+getSingleRoomByNameQuery = (eventName) => {
+    const query = "SELECT * FROM event_rooms WHERE Room_name = ?";
     return new Promise((res, rej) => {
         connection.query(query, [eventName], (error, results, fields) => {
             if(error){
@@ -41,6 +41,6 @@ makeReservationQuery = () => {
 
 module.exports = {
     getAllReservationsQuery,
-    getOnlyRoomIdQuery,
+    getSingleRoomByNameQuery,
     makeReservationQuery
 }

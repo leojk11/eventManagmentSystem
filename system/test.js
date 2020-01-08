@@ -10,3 +10,7 @@ $('#username').on('keypress', async event => {
     }
 })
 
+console.log(localStorage)
+
+localStorage.setItem('name', 'leo')
+

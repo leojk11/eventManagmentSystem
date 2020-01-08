@@ -7,7 +7,8 @@ adminCreateRooms = async(req, res, next) => {
     const roomName = req.body.Room_name;
     const equipAvailable = req.body.Equipement_available;
     const roomCapacity = req.body.Room_capacity;
-    const roomPrice = req.body.Room_price;
+    const roomPricePerDay = req.body.Price_per_day;
+    const roomPricePerHour = req.body.Price_per_hour;
     const roomStatus = req.body.Status;
 
     const userTypes = await userQueries.adminGetOneUserQuery(adminId);
@@ -18,7 +19,7 @@ adminCreateRooms = async(req, res, next) => {
             success: false,
             message: `User with ID of ${adminId}, does not have permissions to create rooms.`
         });
-    } else if(roomName == null || equipAvailable == null || roomCapacity == null || roomPrice == null || roomStatus == null){
+    } else if(roomName == null || equipAvailable == null || roomCapacity == null || roomPricePerDay == null || roomPricePerHour == null || roomStatus == null){
         res.status(400).json({
             success: false,
             message: 'You have to enter room name, equipement available, room capacity, room status and room price.'
@@ -42,8 +43,9 @@ adminEditRoomInfo= async(req, res) => {
     const roomName = req.body.Room_name;
     const equipAvailable = req.body.Equipement_available;
     const roomCapacity = req.body.Room_capacity;
-    const roomPrice = req.body.Price;
     const roomStatus = req.body.Status;
+    const pricePerDay = req.body.Price_per_day;
+    const pricePerHour = req.body.Price_per_hour;
 
     const users = await userQueries.adminGetOneUserQuery(adminId);
     const userExists = users.some(user => {
@@ -80,16 +82,22 @@ adminEditRoomInfo= async(req, res) => {
             room.Room_capacity == roomCapacity
         }
 
-        if(roomPrice == null) {
-            roomPrice == room.Price
-        } else {
-            room.Price == roomPrice
-        }
-
         if(roomStatus == null) {
             roomStatus == room.Status
         } else {
             room.Status == roomStatus
+        }
+
+        if(pricePerDay == null) {
+            pricePerDay == room.Price_per_day
+        } else {
+            room.Price_per_day == pricePerDay
+        }
+
+        if(pricePerHour == null) {
+            pricePerHour == room.Price_per_hour
+        } else {
+            room.Price_per_hour == pricePerHour
         }
 
         return room;
@@ -115,7 +123,7 @@ adminEditRoomInfo= async(req, res) => {
     } 
     else {
         try {
-            await queries.adminEditRoomInfoQuery(editedRoomInfo.Room_name, editedRoomInfo.Equipement_available, editedRoomInfo.Room_capacity, editedRoomInfo.Status, editedRoomInfo.Price, roomId);
+            await queries.adminEditRoomInfoQuery(editedRoomInfo.Room_name, editedRoomInfo.Equipement_available, editedRoomInfo.Room_capacity, editedRoomInfo.Status, editedRoomInfo.Price_per_day, editedRoomInfo.Price_per_hour, roomId);
             res.status(200).json({
                 message: `Room with ID of ${roomId}, has been edited.`
             })
@@ -160,8 +168,22 @@ adminDeleteRooms = async(req, res, next) => {
 };
 
 getAllRooms = async(req, res) => {
+    const note = 'Every room price is in €.';
     try {
-        const rooms = await queries.getAllRoomsQuery();
+        const roomDetails = await queries.getAllRoomsQuery();
+        const rooms = roomDetails.map(room => {
+            const roomObj = {
+                room_name: room.Room_name,
+                equip_available: room.Equipement_available,
+                room_capacity: room.Room_capacity,
+                room_status: room.Status,
+                room_pricing: {
+                    price_per_day: room.Price_per_day + '€',
+                    price_per_hour: room.Price_per_hour + '€'
+                }
+            }
+            return roomObj
+        })
         res.status(200).json({
             rooms
         });
@@ -181,11 +203,24 @@ getSingleRoom = async(req, res, next) => {
     if(roomExists == false) {
         res.status(400).json({
             success: false,
-            message: `Roo wiht ID of ${roomId}, does not exist.`
+            message: `Room wiht ID of ${roomId}, does not exist.`
         });
     } else {
         try {
-            const singleRoom = await queries.getSingleRoomQuery(roomId);
+            const singleRoomDetails = await queries.getSingleRoomQuery(roomId);
+            const singleRoom = singleRoomDetails.map(room => {
+                const roomObj = {
+                    room_name: room.Room_name,
+                    equip_available: room.Equipement_available,
+                    room_capacity: room.Room_capacity,
+                    room_status: room.Status,
+                    room_pricing: {
+                        price_per_day: room.Price_per_day + '€',
+                        price_per_hour: room.Price_per_hour + '€'
+                    }
+                }
+                return roomObj
+            })
             res.status(200).json({
                 singleRoom
             });

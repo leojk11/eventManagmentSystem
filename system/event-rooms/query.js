@@ -52,10 +52,10 @@ adminDeleteRoomQuery = (roomId) => {
     });
 };
 
-adminEditRoomInfoQuery = (roomId) => {
-    const query = "UPDATE event_rooms SET Room_name = ?, Equipement_available = ?, Room_capacity = ?, Status = ?, Price = ? WHERE Id = ?";
+adminEditRoomInfoQuery = (roomName, equipAvailable, roomCapacity, status, pricePerDay, pricePerHour, roomId) => {
+    const query = "UPDATE event_rooms SET Room_name = ?, Equipement_available = ?, Room_capacity = ?, Status = ?, Price_per_day = ?, Price_per_hour = ? WHERE Id = ?";
     return new Promise((res, rej) => {
-        connection.query(query, [], (error, results, fields) => {
+        connection.query(query, [roomName, equipAvailable, roomCapacity, status, pricePerDay, pricePerHour, roomId], (error, results, fields) => {
             if(error){
                 rej(error)
             } else {
