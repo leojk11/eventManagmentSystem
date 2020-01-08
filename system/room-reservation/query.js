@@ -26,10 +26,10 @@ getSingleRoomByNameQuery = (eventName) => {
     });
 };
 
-makeReservationQuery = () => {
+makeReservationQuery = (finalDate, testRoomId, testEventId, testUserId) => {
      const query = "INSERT INTO room_reservation(Date, Room_id, Event_id, User_id) VALUES (?,?,?,?)"
      return new Promise((res, rej) => {
-         connection.query(query, [], (error, results, fields) => {
+         connection.query(query, [finalDate, testRoomId, testEventId, testUserId], (error, results, fields) => {
              if(error){
                  rej(error)
              } else {
@@ -39,8 +39,22 @@ makeReservationQuery = () => {
      });
 };
 
+getMyReservationsQuery = (userId) => {
+    const query = "SELECT * FROM room_reservation WHERE User_id = ?";
+    return new Promise((res, rej) => {
+        connection.query(query, [userId], (error, results, fields) => {
+            if(error){
+                rej(error)
+            } else {
+                res(results)
+            }
+        });
+    });
+};
+
 module.exports = {
     getAllReservationsQuery,
     getSingleRoomByNameQuery,
-    makeReservationQuery
+    makeReservationQuery,
+    getMyReservationsQuery
 }
