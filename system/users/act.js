@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const helper = require('../helper/helper');
 
+const SECRET = 'leoZver';
 
 getAllUsers = async (req, res) => {
     const userId = req.params.userId;
@@ -43,6 +44,9 @@ getAllUsers = async (req, res) => {
 
 getUserInfoAndEvent = async (req, res) => {
     const userId = req.params.userId;
+
+    const token = req.cookies.access_token;
+    const decoded = jwt.verify(token, SECRET);
 
     const users = await getAllUsersQuery();
     const userExist = users.some(user => {
@@ -119,7 +123,7 @@ getMyProfile = async (req, res) => {
 
 signUp = async (req, res) => {
     const userRequest = req.body;
-    const firstname = req.body.Firstname;
+    const firstname = req.body.Name;
     const lastname = req.body.Lastname;
     const username = req.body.Username;
     const email = req.body.Email;
@@ -207,7 +211,7 @@ logIn = async (req, res) => {
             success: false,
             message: `Username ${username}, does not exist. Try with another one.`
         });
-    } else if (username.length <= 4) {
+    } else if (username.length < 4) {
         res.status(400).json({
             success: false,
             message: `Username ${username}, is not valid. Username should contain at least 4 characters.`
@@ -224,14 +228,27 @@ logIn = async (req, res) => {
             const matchPassword = bcrypt.compareSync(password, newUser.Password);
 
             if (matchPassword) {
-                jwt.sign({
-                    user: newUser
-                }, 'secret', (err, token) => {
-                    res.json({
-                        token,
-                        message: 'You have been logged in.'
-                    });
+                const payload = {
+                    username: username
+                }
+                const token = jwt.sign(payload, process.env.SECRET)
+
+                res.cookie('access_token', token, {
+                    maxAge: 10,
+                    httpOnly: true
+                });
+
+                res.status(200).json({
+                    message: 'logged in'
                 })
+                // jwt.sign({
+                //     user: newUser
+                // }, 'secret', (err, token) => {
+                //     res.json({
+                //         token,
+                //         message: 'You have been logged in.'
+                //     });
+                // })
             } else {
                 res.status(400).json({
                     success: false,

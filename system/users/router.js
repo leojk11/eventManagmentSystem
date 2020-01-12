@@ -13,7 +13,9 @@ router.put('/my-profile/:userId/edit', middlewares.verifyToken, actions.editMyPr
 router.get('/admin/:userId/users', middlewares.verifyToken, actions.getAllUsers);
 router.get('/my-profile/:userId', middlewares.verifyToken, actions.getMyProfile);
 router.get('/admin/:adminId/users/:userId', middlewares.verifyToken, actions.adminGetOneUser);
-router.get('/users-events/:userId', middlewares.verifyToken, actions.getUserInfoAndEvent);
+router.get('/users-events/:userId', 
+middlewares.verifyToken, 
+actions.getUserInfoAndEvent);
 
 router.delete('/admin/:adminId/delete-user/:userId', middlewares.verifyToken, actions.adminDeleteUserProfile);
 

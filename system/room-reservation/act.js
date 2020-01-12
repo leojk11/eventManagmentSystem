@@ -75,13 +75,22 @@ makeReservations = async(req, res) => {
                     message: `Reservation for event ${eventId}, in room ${roomName} has been made. Total price is ${hoursReservationFinalPrice}`
                 })
             }
-
-            
         } catch (error) {
             res.status(500).send(error.message);
         }
     }
+}
+
+adminEditReservation = async(req, res) => {
+    const adminId = req.params.adminId;
+    const reservationId = req.params.resId;
+
     
+    try {
+        
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
 }
 
 getAllReservations = async(req, res) => {

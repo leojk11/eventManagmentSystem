@@ -1,7 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const sysRouter = require('./main-router/router');
 const helper = require('./helper/helper');
+
 
 
 const app = express();
@@ -9,6 +11,9 @@ const app = express();
 // BODY PARSER
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.use(cookieParser());
+
+
 
 app.use(sysRouter);
 app.use(helper.wrongRoute);
